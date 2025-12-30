@@ -1,0 +1,49 @@
+coding_standards:
+  style_guide: PEP 8
+  line_length: 79
+  indent: 4 spaces
+  docstring_format: # It must be consistent with the docstring style used in the project.
+    style: Google Style
+    note: Use triple double quotes for all docstrings
+  type_hints: Recommended where applicable
+  encoding: UTF-8
+
+naming_conventions:
+  file_name:
+    case: snake_case
+    ex: transaction_service.py
+  module_name:
+    case: snake_case
+    ex: transaction_service.py
+  class_name:
+    case: PascalCase
+    ex: TransactionService
+  function_name:
+    case: snake_case
+    ex: create_transaction
+  variable_name:
+    case: snake_case
+    ex: transaction_date
+  constant:
+    case: UPPER_SNAKE_CASE
+    ex: MAX_AMOUNT
+
+git_management:
+  branch_strategy:
+    name: GitHub Flow
+    main_features:
+      - All changes are made through feature branches.
+      - Feature branches are created from the main branch.
+      - Pull requests are used for code reviews before merging.
+      - The main branch is always deployable.
+  commit_message:
+    convention: Conventional Commits
+    format: "<type>(<scope>): <description>"
+    types:
+      - feat: A new feature
+      - fix: A bug fix
+      - docs: Documentation changes
+      - style: Code style changes (formatting, missing semi-colons, etc.)
+      - refactor: Code changes that neither fix a bug nor add a feature
+      - test: Adding or updating tests
+      - chore: Changes to the build process or auxiliary tools and libraries such as documentation generation
