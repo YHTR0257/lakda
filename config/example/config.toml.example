@@ -1,0 +1,30 @@
+# mcp-markdown-ragdocs configuration
+# Copy this file to config.toml and adjust settings
+
+[documents]
+# Root directory for document search
+root_path = "data/documents"
+
+# Specific paths to search (optional - restricts to specific domains)
+# Uncomment to search only specific domains:
+# paths = ["data/documents/error-handling"]
+
+[search]
+# Hybrid search weights (BM25 + Semantic)
+semantic_weight = 1.0    # Weight for semantic (vector) search
+keyword_weight = 1.0     # Weight for keyword (BM25) search
+
+# Maximum number of results to return
+max_results = 5
+
+[embedding]
+# Embedding model for semantic search
+# Options: "openai", "local" (sentence-transformers), etc.
+model = "local"
+
+# For local embeddings (sentence-transformers)
+local_model_name = "all-MiniLM-L6-v2"
+
+# For OpenAI embeddings (requires OPENAI_API_KEY environment variable)
+# model = "openai"
+# openai_model_name = "text-embedding-ada-002"

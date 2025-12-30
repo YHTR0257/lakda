@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "markdown-ragdocs": {
+      "command": "npx",
+      "args": [
+        "@modelcontextprotocol/server-markdown-ragdocs",
+        "--config",
+        "config/config.toml"
+      ]
+    },
+    "markdownify": {
+      "command": "npx",
+      "args": [
+        "markdownify-mcp"
+      ]
+    }
+  }
+}
