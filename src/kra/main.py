@@ -5,6 +5,9 @@ This module provides the command-line interface for the KRA system.
 
 import click
 from rich.console import Console
+from rich.markdown import Markdown
+
+from processing.generator import AnswerGenerator, GeminiCLIError
 
 console = Console()
 
@@ -58,7 +61,50 @@ def ask(question: str | None, file: str | None, verbose: bool) -> None:
 
     # Phase 2: Call Gemini CLI with mcp-markdown-ragdocs integration
     # mcp-markdown-ragdocs searches all domains in data/documents/ based on config.toml
-    console.print("\n[yellow]⚠ Not yet implemented - Phase 2 development in progress[/yellow]")
+    console.print("\n[dim]Generating answer using Gemini CLI...[/dim]\n")
+
+    # Initialize answer generator
+    generator = AnswerGenerator(verbose=verbose)
+
+    # Validate CLI is available
+    if not generator.validate_cli_available():
+        console.print(
+            "[red]Error: Gemini CLI is not available. "
+            "Please ensure it is installed and in your PATH.[/red]"
+        )
+        console.print(
+            "[dim]Hint: Install via 'npm install -g @google/generative-ai-cli' "
+            "or check the documentation.[/dim]"
+        )
+        return
+
+    try:
+        # Generate answer
+        result = generator.generate_answer(question_text)
+
+        # Display answer
+        console.print("[bold green]Answer:[/bold green]\n")
+
+        # Render the answer as markdown for better formatting
+        markdown = Markdown(result["answer"])
+        console.print(markdown)
+
+        # Display sources if available
+        if result["sources"]:
+            console.print("\n[bold cyan]Sources:[/bold cyan]")
+            for source in result["sources"]:
+                console.print(f"  • {source}")
+
+        # Verbose mode: show raw output
+        if verbose:
+            console.print("\n[dim]--- Raw Output ---[/dim]")
+            console.print(f"[dim]{result['raw_output']}[/dim]")
+
+    except GeminiCLIError as e:
+        console.print(f"[red]Error generating answer:[/red] {e}")
+        if verbose:
+            import traceback
+            console.print(f"[dim]{traceback.format_exc()}[/dim]")
 
 
 @cli.command()
