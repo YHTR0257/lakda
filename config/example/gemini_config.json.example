@@ -1,0 +1,8 @@
+{
+  "gemini_cli_path": "/path/to/gemini",
+  "timeout": 120,
+  "model": "gemini-2.0-flash-exp",
+  "temperature": 0.7,
+  "max_tokens": 2048,
+  "note": "gemini_cli_pathは 'which gemini' で確認したパスを設定"
+}

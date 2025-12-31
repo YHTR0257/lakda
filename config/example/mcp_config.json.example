@@ -1,18 +1,16 @@
 {
   "mcpServers": {
-    "markdown-ragdocs": {
-      "command": "npx",
+    "markdown-rag": {
+      "comment": "MCP-Markdown-RAG - Semantic search for markdown documents",
+      "serverPath": "{path/to}/MCP-Markdown-RAG",
+      "command": "uv",
       "args": [
-        "@modelcontextprotocol/server-markdown-ragdocs",
-        "--config",
-        "config/config.toml"
-      ]
-    },
-    "markdownify": {
-      "command": "npx",
-      "args": [
-        "markdownify-mcp"
+        "--directory",
+        "{path/to}/MCP-Markdown-RAG",
+        "run",
+        "server.py"
       ]
     }
-  }
+  },
+  "note": "YOUR_USERNAMEを実際のユーザー名に置き換えてください (echo $HOME で確認可能)"
 }
