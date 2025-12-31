@@ -69,7 +69,7 @@ dmypy.json
 data/
 
 # Config files with sensitive information
-config/gemini_config.json  # Phase 3 only - not needed for Phase 2
+config/gemini_config.json
 config/mcp_config.json
 config/config.toml
 *.key
