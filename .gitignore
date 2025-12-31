@@ -66,7 +66,8 @@ dmypy.json
 # Project-specific
 
 # Data files (uploads and processed documents may contain sensitive info)
-data/
+/data/
+/data/*
 
 # Config files with sensitive information
 config/gemini_config.json
