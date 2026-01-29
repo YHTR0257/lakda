@@ -1,5 +1,13 @@
 # API Endpoints
 
+| Method | Endpoint | Description | Feature ID |
+|--------|----------|-------------|-------------|
+| POST   | /query   | ユーザーの質問に対する回答生成 | FT02 |
+| POST   | /documents/upload | ドキュメントのアップロードと処理開始 | FT07 |
+| GET    | /documents/{document_id}/status | ドキュメント処理ステータスの取得 | FT07 |
+| GET    | /documents | ドキュメント一覧の取得（ドメイン別） | FT07 |
+| POST   | /feedback | ユーザーフィードバックの記録 | FT09 |
+
 ## Phase 2: CLI Interface (2026-01-02 - 2026-02-02)
 
 Phase 2ではHTTP APIは実装せず、CLIベースで動作します。
