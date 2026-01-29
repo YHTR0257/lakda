@@ -1,55 +1,35 @@
 # API Endpoints
 
-| Method | Endpoint | Description | Feature ID |
-|--------|----------|-------------|-------------|
-| POST   | /query   | ユーザーの質問に対する回答生成 | FT02 |
-| POST   | /documents/upload | ドキュメントのアップロードと処理開始 | FT07 |
-| GET    | /documents/{document_id}/status | ドキュメント処理ステータスの取得 | FT07 |
-| GET    | /documents | ドキュメント一覧の取得（ドメイン別） | FT07 |
-| POST   | /feedback | ユーザーフィードバックの記録 | FT09 |
-
-## Phase 2: CLI Interface (2026-01-02 - 2026-02-02)
-
-Phase 2ではHTTP APIは実装せず、CLIベースで動作します。
-
-### CLI Usage
-
-```bash
-# 質問応答
-python -m kra.main ask --question "Pythonでエラーが出た" --domain error-handling
-
-# ドキュメント処理
-python -m kra.main upload --file path/to/document.pdf --domain error-handling
-
-# フィードバック記録
-python -m kra.main feedback --session-id {id} --rating useful
+## Base URL
 ```
+http://localhost:8000/api
+```
+
+## Endpoint Summary
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST   | /search  | ユーザーの質問に対する回答生成 |
+| POST   | /documents/upload | ドキュメントのアップロードと処理開始 |
+| GET    | /documents/{document_id}/status | ドキュメント処理ステータスの取得 |
+| GET    | /documents | ドキュメント一覧の取得（ドメイン別） |
+| POST   | /feedback | ユーザーフィードバックの記録 |
+| GET    | /health | システムヘルスチェック |
 
 ---
 
-## Phase 3: REST API (2026-02-02 - 2026-03-31) - 条件付き実装
+## 1. 検索・質問応答
 
-Phase 3でAPI連携機能(FT11)を実装する場合のエンドポイント設計。
-
-### Base URL
-```
-http://localhost:8000/api/v1
-```
-
----
-
-### 1. 質問応答
-
-#### `POST /query`
+#### `POST /search`
 
 **Request**:
 ```json
 {
   "question": "Pythonでエラーが出た",
-  "domain": "error-handling",  // optional
+  "domain": "error-handling",
   "options": {
-    "interpret": true,          // 質問解釈を実行
-    "max_results": 3            // 最大引用元数
+    "interpret": true,
+    "max_results": 3
   }
 }
 ```
@@ -72,17 +52,9 @@ http://localhost:8000/api/v1
 }
 ```
 
-**Error Response**:
-```json
-{
-  "error": "No documents found in domain",
-  "code": "DOMAIN_EMPTY"
-}
-```
-
 ---
 
-### 2. ドキュメント管理
+## 2. ドキュメント管理
 
 #### `POST /documents/upload`
 
@@ -90,7 +62,7 @@ http://localhost:8000/api/v1
 ```
 file: document.pdf
 domain: error-handling
-metadata: {"tags": ["python", "exception"]}  // optional
+metadata: {"tags": ["python", "exception"]}
 ```
 
 **Response**:
@@ -108,7 +80,7 @@ metadata: {"tags": ["python", "exception"]}  // optional
 ```json
 {
   "document_id": "doc-5678",
-  "status": "completed",  // processing, completed, failed
+  "status": "completed",
   "processed_file": "data/documents/error-handling/document.md",
   "metadata": {
     "domain": "error-handling",
@@ -138,7 +110,7 @@ metadata: {"tags": ["python", "exception"]}  // optional
 
 ---
 
-### 3. フィードバック
+## 3. フィードバック
 
 #### `POST /feedback`
 
@@ -146,8 +118,8 @@ metadata: {"tags": ["python", "exception"]}  // optional
 ```json
 {
   "session_id": "uuid-1234",
-  "rating": "useful",  // useful, not_useful
-  "comment": "解決できました"  // optional
+  "rating": "useful",
+  "comment": "解決できました"
 }
 ```
 
@@ -161,58 +133,7 @@ metadata: {"tags": ["python", "exception"]}  // optional
 
 ---
 
-### 4. ドメイン管理 (Phase 3 - FT10実装時のみ)
-
-#### `GET /domains`
-
-**Response**:
-```json
-{
-  "domains": [
-    {
-      "name": "error-handling",
-      "path": "data/documents/error-handling",
-      "description": "エラーハンドリング関連",
-      "document_count": 15,
-      "weight": 1.0
-    },
-    {
-      "name": "architecture",
-      "path": "data/documents/architecture",
-      "description": "アーキテクチャ設計",
-      "document_count": 8,
-      "weight": 1.2
-    }
-  ]
-}
-```
-
-#### `POST /domains`
-
-**Request**:
-```json
-{
-  "name": "api-guides",
-  "path": "data/documents/api-guides",
-  "description": "API利用ガイド",
-  "weight": 1.0,
-  "filters": {
-    "tags": ["api", "rest"]
-  }
-}
-```
-
-**Response**:
-```json
-{
-  "status": "created",
-  "domain": "api-guides"
-}
-```
-
----
-
-### 5. システム情報
+## 4. システム情報
 
 #### `GET /health`
 
@@ -220,10 +141,7 @@ metadata: {"tags": ["python", "exception"]}  // optional
 ```json
 {
   "status": "healthy",
-  "mcp_servers": {
-    "mcp-markdown-ragdocs": "connected",
-    "markdownify-mcp": "connected"
-  },
+  "database": "connected",
   "llm_status": "available"
 }
 ```
@@ -241,13 +159,3 @@ metadata: {"tags": ["python", "exception"]}  // optional
 | `LLM_UNAVAILABLE` | 503 | LLMサービスが利用不可 |
 | `INVALID_FORMAT` | 400 | リクエストフォーマットが不正 |
 | `RATE_LIMIT_EXCEEDED` | 429 | レート制限超過 |
-
----
-
-## Authentication (Phase 3 - 将来実装)
-
-現在は認証なし。Phase 3後半でAPI公開する場合:
-
-```
-Authorization: Bearer {api_key}
-```
