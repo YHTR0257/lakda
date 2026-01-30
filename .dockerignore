@@ -1,0 +1,107 @@
+# ========================================
+# Version Control
+# ========================================
+
+.git/
+.gitignore
+.gitattributes
+
+# ========================================
+# Common (OS / IDE)
+# ========================================
+
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ========================================
+# Backend (backend/)
+# ========================================
+
+# Virtual environment
+backend/.venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Type checking / Linting
+.mypy_cache/
+.ruff_cache/
+
+# Testing
+backend/tests/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# ========================================
+# Frontend (frontend/)
+# ========================================
+
+# Dependencies (rebuild in container)
+frontend/node_modules/
+
+# Build cache
+frontend/.next/
+
+# Testing
+frontend/tests/
+frontend/coverage/
+frontend/.nyc_output/
+
+# Lock file (rebuild in container)
+frontend/package-lock.json
+
+# ========================================
+# Shared Resources
+# ========================================
+
+# Environment / Secrets
+.env
+.env.*
+envs/
+*.key
+*.pem
+
+# ========================================
+# Data (large files)
+# ========================================
+
+data/uploads/
+data/documents/
+data/.rag_cache/
+
+# ========================================
+# Documentation
+# ========================================
+
+docs/
+*.md
+!README.md
+
+# ========================================
+# Logs / Temporary
+# ========================================
+
+logs/
+tmp/
+temp/
+*.log
+*.tmp
+*.bak
+
+# ========================================
+# Build Artifacts
+# ========================================
+
+dist/
+build/
+*.egg-info/

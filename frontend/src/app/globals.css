@@ -1,0 +1,19 @@
+ @tailwind base;
+ @tailwind components;
+ @tailwind utilities;
+
+/* カスタムスタイルがあればここに */
+ @layer base {
+  h1 {
+    @apply text-3xl font-bold;
+  }
+  h2 {
+    @apply text-2xl font-semibold;
+  }
+}
+
+ @layer components {
+  .btn-primary {
+    @apply bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded;
+  }
+}
