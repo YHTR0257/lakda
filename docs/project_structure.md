@@ -28,10 +28,10 @@ knowledge-retrieval-assistant/   # プロジェクトルート
 ├── envs/                            # 環境設定ファイル
 │   ├── docker/                      # Dockerfile群
 │   │    ├── backend.Dockerfile          # backend用Dockerfile
+│   │    ├── docker-compose.yml          # 本番用Docker Compose設定
 │   │    ├── docker-compose.override.yml # 開発用Docker Compose設定
 │   │    └── frontend.Dockerfile         # frontend用Dockerfile
-│   ├── config/                      # プロジェクトの設定ファイル
-│   └── docker-compose.yml           # Docker Compose設定ファイル
+│   └── config/                      # プロジェクトの設定ファイル
 ├── scripts/                         # 補助スクリプト
 │   ├── setup/                       # 環境構築スクリプト
 │   │    ├── init_db.sh                  # DB初期化
@@ -52,7 +52,6 @@ knowledge-retrieval-assistant/   # プロジェクトルート
 ├── .gitignore                       # Git無視ファイル設定
 ├── .env.example                     # 環境変数テンプレート
 ├── .env                             # 環境変数ファイル（.gitignore対象）
-├── docker-compose.yml               # Docker Compose設定
 └── README.md                        # プロジェクト概要README
 ```
 
@@ -69,7 +68,7 @@ backend/
 │       ├── api/                     # APIレイヤー（routes/を省略）
 │       │    ├── __init__.py
 │       │    ├── dependencies.py         # 依存性注入
-│       │    ├── search.py               # 検索エンドポイント
+│       │    ├── ask.py                  # 相談エンドポイント
 │       │    ├── upload.py               # アップロードエンドポイント
 │       │    └── feedback.py             # フィードバックエンドポイント
 │       ├── cli/                     # CLI関連コード
@@ -77,9 +76,9 @@ backend/
 │       │    └── commands.py             # CLIコマンド定義
 │       ├── core/                    # ビジネスロジック
 │       │    ├── __init__.py
-│       │    ├── search/                 # 検索機能
+│       │    ├── ask/                    # 相談機能
 │       │    │    ├── __init__.py
-│       │    │    ├── service.py             # 検索サービス
+│       │    │    ├── service.py             # 相談サービス
 │       │    │    └── retrieval.py           # ドキュメント検索
 │       │    ├── processing/             # Q&A処理
 │       │    │    ├── __init__.py
@@ -102,7 +101,7 @@ backend/
 │       │    ├── __init__.py
 │       │    ├── schemas/                # リクエスト/レスポンススキーマ
 │       │    │    ├── __init__.py
-│       │    │    ├── search.py              # 検索関連スキーマ
+│       │    │    ├── ask.py                 # 相談関連スキーマ
 │       │    │    └── feedback.py            # フィードバック関連スキーマ
 │       │    └── entities/               # DBエンティティ
 │       │         ├── __init__.py
@@ -116,11 +115,11 @@ backend/
      ├── __init__.py
      ├── conftest.py                     # テストフィクスチャ
      ├── api/                            # APIレイヤーテスト
-     │    ├── test_search.py
+     │    ├── test_ask.py
      │    ├── test_upload.py
      │    └── test_feedback.py
      ├── core/                           # ビジネスロジックテスト
-     │    ├── search/
+     │    ├── ask/
      │    │    ├── test_service.py
      │    │    └── test_retrieval.py
      │    ├── processing/
@@ -151,7 +150,7 @@ frontend/
 │   │    ├── layout.tsx                  # ルートレイアウト
 │   │    ├── page.tsx                    # ホームページ
 │   │    ├── globals.css                 # グローバルスタイル
-│   │    ├── search/                     # 検索ページ
+│   │    ├── ask/                        # 相談ページ
 │   │    │    └── page.tsx
 │   │    └── upload/                     # アップロードページ
 │   │         └── page.tsx
@@ -166,10 +165,10 @@ frontend/
 │   │    │    ├── Header.tsx
 │   │    │    ├── Sidebar.tsx
 │   │    │    └── Footer.tsx
-│   │    ├── search/                     # 検索関連コンポーネント
-│   │    │    ├── SearchBar.tsx
-│   │    │    ├── SearchResults.tsx
-│   │    │    └── ResultCard.tsx
+│   │    ├── ask/                        # 相談関連コンポーネント
+│   │    │    ├── QuestionInput.tsx
+│   │    │    ├── AnswerDisplay.tsx
+│   │    │    └── SourceCard.tsx
 │   │    └── upload/                     # アップロード関連コンポーネント
 │   │         ├── FileUploader.tsx
 │   │         └── UploadStatus.tsx
@@ -179,17 +178,17 @@ frontend/
 │   │    └── utils.ts                    # ユーティリティ関数
 │   │
 │   ├── hooks/                       # カスタムフック
-│   │    ├── useSearch.ts                # 検索フック
+│   │    ├── useAsk.ts                   # 相談フック
 │   │    ├── useUpload.ts                # アップロードフック
 │   │    └── useDebounce.ts              # デバウンスフック
 │   │
 │   ├── types/                       # 型定義
 │   │    ├── api.ts                      # API関連型
 │   │    ├── document.ts                 # ドキュメント関連型
-│   │    └── search.ts                   # 検索関連型
+│   │    └── ask.ts                      # 相談関連型
 │   │
 │   └── store/                       # Zustandストア
-│        ├── searchStore.ts              # 検索状態管理
+│        ├── askStore.ts                 # 相談状態管理
 │        └── uiStore.ts                  # UI状態管理
 │
 ├── tests/                           # フロントエンドユニットテスト
@@ -197,18 +196,18 @@ frontend/
 │   │    ├── ui/
 │   │    │    ├── Button.test.tsx
 │   │    │    └── Input.test.tsx
-│   │    ├── search/
-│   │    │    ├── SearchBar.test.tsx
-│   │    │    └── SearchResults.test.tsx
+│   │    ├── ask/
+│   │    │    ├── QuestionInput.test.tsx
+│   │    │    └── AnswerDisplay.test.tsx
 │   │    └── upload/
 │   │         └── FileUploader.test.tsx
 │   ├── hooks/                       # フックテスト
-│   │    ├── useSearch.test.ts
+│   │    ├── useAsk.test.ts
 │   │    └── useUpload.test.ts
 │   ├── lib/                         # ユーティリティテスト
 │   │    └── api.test.ts
 │   └── store/                       # ストアテスト
-│        └── searchStore.test.ts
+│        └── askStore.test.ts
 │
 ├── public/                          # 静的ファイル
 │    ├── images/                         # 画像ファイル

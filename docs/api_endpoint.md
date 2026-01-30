@@ -9,7 +9,7 @@ http://localhost:8000/api
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST   | /search  | ユーザーの質問に対する回答生成 |
+| POST   | /ask     | ユーザーの質問に対する回答生成 |
 | POST   | /documents/upload | ドキュメントのアップロードと処理開始 |
 | GET    | /documents/{document_id}/status | ドキュメント処理ステータスの取得 |
 | GET    | /documents | ドキュメント一覧の取得（ドメイン別） |
@@ -18,9 +18,9 @@ http://localhost:8000/api
 
 ---
 
-## 1. 検索・質問応答
+## 1. 相談（質問応答）
 
-#### `POST /search`
+#### `POST /ask`
 
 **Request**:
 ```json
