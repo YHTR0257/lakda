@@ -1,0 +1,118 @@
+[project]
+name = "knowledge-retrieval-assistant"
+version = "0.1.0"
+description = "Domain-agnostic RAG system for searching documents and generating context-aware answers with citations"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "YHTR0257" }
+]
+keywords = ["rag", "retrieval", "llm", "mcp", "knowledge-base"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    # Core dependencies (production)
+    "click>=8.1.0",           # CLI framework
+    "fastapi>=0.100.0",       # REST API framework
+    "httpx>=0.24.0",          # Async HTTP client for API calls
+    "markitdown>=0.1.4",      # Document conversion
+    "pydantic>=2.0.0",        # Data validation
+    "pyyaml>=6.0.0",          # YAML parsing for configs
+    "rich>=13.0.0",           # Rich terminal output
+    "uvicorn>=0.23.0",        # ASGI server
+]
+
+[project.optional-dependencies]
+# Development dependencies
+dev = [
+    "black>=23.7.0",          # Code formatter
+    "ipython>=8.12.0",        # Interactive shell
+    "mypy>=1.5.0",            # Type checker
+    "pytest>=7.4.0",          # Testing framework
+    "pytest-asyncio>=0.21.0", # Async test support
+    "pytest-cov>=4.1.0",      # Coverage reporting
+    "ruff>=0.0.280",          # Linter
+    "types-pyyaml>=6.0.12",   # Type stubs for PyYAML
+]
+
+[project.scripts]
+kra = "kra.main:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kra"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = [
+    "--strict-markers",
+    "--cov=kra",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]  # Ignore unused imports in __init__.py
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false  # Set to true in Phase 3
+ignore_missing_imports = true
+plugins = ["pydantic.mypy"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
