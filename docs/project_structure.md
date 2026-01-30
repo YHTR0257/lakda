@@ -5,7 +5,7 @@
 ## Directory Structure
 
 ```
-knowledge-retrieval-assistant/   # プロジェクトルート
+lakda/   # プロジェクトルート
 ├── backend/                         # backendサーバーコード
 ├── frontend/                        # フロントエンドコード
 ├── docs/                            # ドキュメント
@@ -62,7 +62,7 @@ knowledge-retrieval-assistant/   # プロジェクトルート
 ```
 backend/
 ├── src/                             # アプリケーションコード
-│   └── kra/                         # コアモジュール
+│   └── lakda/                         # コアモジュール
 │       ├── __init__.py              # kraパッケージ初期化
 │       ├── main.py                  # アプリケーションエントリーポイント
 │       ├── api/                     # APIレイヤー（routes/を省略）

@@ -30,7 +30,7 @@
 ## Module Structure
 
 ```
-src/kra/feedback.py              # フィードバック収集・保存
+src/lakda/feedback.py              # フィードバック収集・保存
 data/feedback/                   # データ保存先
   ├── 2026-01.jsonl             # 月次ファイル
   └── 2026-02.jsonl
@@ -65,7 +65,7 @@ data/feedback/                   # データ保存先
 
 ## Implementation Plan
 
-### Step 1: Core Functions (src/kra/feedback.py)
+### Step 1: Core Functions (src/lakda/feedback.py)
 
 ```python
 from pathlib import Path
@@ -123,11 +123,10 @@ def generate_session_id() -> str:
     return str(uuid.uuid4())[:8]
 ```
 
-### Step 2: CLI Integration (src/kra/cli/output.py)
+### Step 2: CLI Integration (src/lakda/cli/output.py)
 
 ```python
-from kra.feedback import save_feedback
-
+from lakda.feedback import save_feedback
 def display_answer_with_feedback(
     question: str,
     answer: str,
@@ -179,8 +178,8 @@ def display_answer_with_feedback(
 ### Step 3: Integration to main.py
 
 ```python
-# src/kra/main.py での使用例
-from kra.cli.output import display_answer_with_feedback
+# src/lakda/main.py での使用例
+from lakda.cli.output import display_answer_with_feedback
 
 def main():
     question = input("質問を入力してください: ")
@@ -205,11 +204,11 @@ def main():
 import json
 from pathlib import Path
 from datetime import datetime
-from kra.feedback import save_feedback, get_feedback_file_path, generate_session_id
+from lakda.feedback import save_feedback, get_feedback_file_path, generate_session_id
 
 def test_save_feedback_creates_file(tmp_path, monkeypatch):
     """フィードバック保存がファイル生成することを確認"""
-    monkeypatch.setattr("kra.feedback.Path", lambda *args: tmp_path / "data" / "feedback")
+    monkeypatch.setattr("lakda.feedback.Path", lambda *args: tmp_path / "data" / "feedback")
 
     save_feedback(
         question="テスト質問",
@@ -226,7 +225,7 @@ def test_save_feedback_creates_file(tmp_path, monkeypatch):
 
 def test_feedback_jsonl_format(tmp_path, monkeypatch):
     """JSONL形式が正しいことを確認"""
-    monkeypatch.setattr("kra.feedback.Path", lambda *args: tmp_path / "data" / "feedback")
+    monkeypatch.setattr("lakda.feedback.Path", lambda *args: tmp_path / "data" / "feedback")
 
     save_feedback(
         question="Q",
@@ -278,7 +277,7 @@ def test_monthly_file_rotation():
 ## Usage Example
 
 ```bash
-$ python -m kra.main
+$ python -m lakda.main
 
 質問を入力してください: エラーE500の対処法は？
 
@@ -299,8 +298,8 @@ $ python -m kra.main
 
 ## Success Criteria
 
-- [ ] `src/kra/feedback.py` の実装完了
-- [ ] `src/kra/cli/output.py` への統合完了
+- [ ] `src/lakda/feedback.py` の実装完了
+- [ ] `src/lakda/cli/output.py` への統合完了
 - [ ] 単体テスト全通過（カバレッジ >90%）
 - [ ] 統合テストで実際のフィードバック保存を確認
 - [ ] JSONL形式の検証（jq/Pandasで読み込み可能）

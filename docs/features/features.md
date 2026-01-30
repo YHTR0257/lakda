@@ -26,19 +26,19 @@
 - **説明**: Web UIを通じてPDF/Word/Markdown/テキストファイルをシステムにアップロードします。
 - **実装コンポーネント**:
   - Frontend: `frontend/src/components/upload/FileUploader.tsx`
-  - Backend: `backend/src/kra/api/` (API), `backend/src/kra/core/documents/` (保存処理)
+  - Backend: `backend/src/lakda/api/` (API), `backend/src/lakda/core/documents/` (保存処理)
 - **対応フォーマット**: PDF, DOCX, MD, TXT
 - **フロー**: FrontendからアップロードされたファイルはBackend APIに送信され、指定のディレクトリ (`data/uploads/`) に保存されます。
 
 ### FT03: ドキュメント処理
 - **説明**: アップロードされたファイルをMarkdownに変換し、LLM(Ollama)を用いて内容の要約を行います。この処理はBackendで実行されます。
-- **実装コンポーネント**: Backend (`backend/src/kra/core/documents/`)
+- **実装コンポーネント**: Backend (`backend/src/lakda/core/documents/`)
 - **ツール**: `markitdown`, `Ollama`
 - **フロー**: PDF/Word/テキスト → Markdown + 要約(LLM) → `data/documents/{domain}/`
 
 ### FT04: ドキュメントメタデータ付与
 - **説明**: ドキュメントにFrontmatter（ドメイン分類、タグ等）を追加します。この処理はBackendで実行されます。
-- **実装コンポーネント**: Backend (`backend/src/kra/core/documents/`)
+- **実装コンポーネント**: Backend (`backend/src/lakda/core/documents/`)
 - **Frontmatter例**:
 ```yaml
 ---
@@ -56,7 +56,7 @@ created: 2026-01-15
 
 ### FT06: 質問解釈
 - **説明**: ユーザーの曖昧な質問を、LLM(Ollama)を用いて検索に適した具体的な質問に変換します。この処理はBackendで実行されます。
-- **実装コンポーネント**: Backend (`backend/src/kra/core/processing/`), `Ollama`
+- **実装コンポーネント**: Backend (`backend/src/lakda/core/processing/`), `Ollama`
 - **例**:
   - 入力: "エラーが出た"
   - 出力: "Pythonで発生したAttributeErrorの原因と解決方法は？"
@@ -68,12 +68,12 @@ created: 2026-01-15
 
 ### FT08: グラフ探索
 - **説明**: LlamaIndexのナレッジグラフ機能を利用し、質問に関連する情報を探索します。このプロセスでは、探索の精度向上のためにLLM(Ollama)が補助的に利用されることがあります。これにより、単純なドキュメント検索よりも複雑な関係性を捉えた回答生成が可能になります。
-- **実装コンポーネント**: Backend (`backend/src/kra/core/search/`)
+- **実装コンポーネント**: Backend (`backend/src/lakda/core/search/`)
 - **ツール**: `LlamaIndex (Knowledge Graph)`, `Ollama`
 
 ### FT09: 回答生成
 - **説明**: 探索された関連情報(コンテキスト)を元に、LLM(Ollama)を用いて質問に対する回答を生成し、最終的な出力のために要約します。この処理はBackendで実行されます。
-- **実装コンポーネント**: Backend (`backend/src/kra/core/processing/`), `Ollama`
+- **実装コンポーネント**: Backend (`backend/src/lakda/core/processing/`), `Ollama`
 - **出力形式**:
   - 回答本文
   - 引用元（ファイル名、グラフのノード等）
@@ -87,7 +87,7 @@ created: 2026-01-15
 - **説明**: ユーザーの回答評価（有用/無用）をWeb UIから受け取り、Backendで記録します。
 - **実装コンポーネント**:
   - Frontend: `frontend/src/components/ask/*`
-  - Backend: `backend/src/kra/core/feedback/`
+  - Backend: `backend/src/lakda/core/feedback/`
 - **保存先**: `data/feedback/` にJSON形式で保存
 - **LlamaIndex保存**: `PropertyGraphIndex`を用いてフィードバック情報をナレッジグラフに保存
 
@@ -108,17 +108,17 @@ created: 2026-01-15
 
 ### FT14: 外部API連携
 - **説明**: Gemini API、Glean API、Local LLM連携
-- **実装**: `src/kra/api/gateway.py`
+- **実装**: `src/lakda/api/gateway.py`
 - **機能**: APIラッパー、レート制限、リトライ処理
 
 ### FT15: オーケストレーター
 - **説明**: 複数エージェント（解釈・検索・生成）の統合管理
-- **実装**: LangGraph/LangChain (`src/kra/orchestrator/orchestrator.py`)
+- **実装**: LangGraph/LangChain (`src/lakda/orchestrator/orchestrator.py`)
 - **機能**: タスク分配、エージェント間通信、結果統合
 
 ### FT16: エージェント実装
 - **説明**: 専門タスク担当エージェント
-- **実装**: `src/kra/orchestrator/agents/`
+- **実装**: `src/lakda/orchestrator/agents/`
 - **エージェント種類**:
   - Interpreter Agent: 質問解釈
   - Retrieval Agent: 情報検索
