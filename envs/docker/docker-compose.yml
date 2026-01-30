@@ -1,0 +1,90 @@
+services:
+  kra-database:
+    image: neo4j:5
+    container_name: kra-database
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-password}
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    networks:
+      - kra-network
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p ${NEO4J_PASSWORD:-password} 'RETURN 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  backend:
+    build:
+      context: ../../
+      dockerfile: envs/docker/backend.Dockerfile
+    container_name: kra-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - NEO4J_URI=bolt://kra-database:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-password}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - OLLAMA_HOST=http://ollama:11434
+      - LOG_LEVEL=INFO
+    env_file:
+      - ../../.env
+    depends_on:
+      kra-database:
+        condition: service_healthy
+    networks:
+      - kra-network
+    volumes:
+      - ../../:/app
+      - backend_venv:/app/.venv
+    command: ["uvicorn", "kra.main:app", "--host", "0.0.0.0", "--port", "8000"]
+  
+  frontend:
+    build:
+      context: ../../
+      dockerfile: envs/docker/frontend.Dockerfile
+    container_name: kra-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+    env_file:
+      - ../../.env
+    networks:
+      - kra-network
+    depends_on:
+      - backend
+    volumes:
+      - ../../:/app
+      - frontend_node_modules:/app/node_modules
+  
+  # ローカルLLM（オプション）
+  ollama:
+    image: ollama/ollama:latest
+    container_name: kra-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - kra-network
+    profiles:
+      - local-llm  # オプショナルサービス
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
+  ollama_models:
+  backend_venv: {}
+  frontend_node_modules: {}
+
+networks:
+  kra-network:
+    driver: bridge
