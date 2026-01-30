@@ -1,0 +1,31 @@
+services:
+  backend:
+    build:
+      context: ../../
+      dockerfile: envs/docker/backend.Dockerfile
+      target: development  # マルチステージビルドの開発ステージ
+    volumes:
+      - ../../backend/src:/app/src:ro  # ソースコードのホットリロード
+      - ../../data:/app/data
+    environment:
+      - LOG_LEVEL=DEBUG
+      - PYTHONUNBUFFERED=1
+    command: ["uvicorn", "kra.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  frontend:
+    build:
+      context: ../../
+      dockerfile: envs/docker/frontend.Dockerfile
+      target: development
+    volumes:
+      - ../../frontend/src:/app/src:ro  # ソースコードのホットリロード
+      - ../../frontend/public:/app/public:ro
+      - /app/node_modules  # node_modulesは除外
+    environment:
+      - NODE_ENV=development
+    command: ["npm", "run", "dev"]
+
+  kra-database:
+    ports:
+      - "7474:7474"
+      - "7687:7687"
