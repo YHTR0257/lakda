@@ -49,15 +49,15 @@ sequenceDiagram
     participant Database
     participant LLM
 
-    User->>Frontend: 質問入力
-    Frontend->>Backend: 質問送信 (API Call)
+    User->>Frontend: 質問入力(SC02)
+    Frontend->>Backend: 質問送信 (AskAPI Call)
     Backend->>Backend: 質問解釈 (Pydantic validation)
     Backend->>Database: ハイブリッド検索 (LlamaIndex)
     Database-->>Backend: 検索結果返却
     Backend->>LLM: 回答生成 (Gemini / ollama)
     LLM-->>Backend: 生成回答
-    Backend->>Frontend: 回答とドキュメント送信
-    Frontend->>User: 回答表示
+    Backend->>Frontend: 回答とドキュメント送信 (AskAPI Response)
+    Frontend->>User: 回答表示(SCxx)
 ```
 
 # Data Storage
