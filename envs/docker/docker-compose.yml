@@ -24,6 +24,7 @@ services:
     build:
       context: ../../
       dockerfile: envs/docker/backend.Dockerfile
+      target: development
     container_name: lakda-backend
     ports:
       - "8000:8000"
@@ -42,19 +43,21 @@ services:
     networks:
       - lakda-network
     volumes:
-      - ../../:/app
-      - backend_venv:/app/.venv
+      - ../../backend:/app
+      - /app/.venv
     command: ["uvicorn", "lakda.main:app", "--host", "0.0.0.0", "--port", "8000"]
   
   frontend:
     build:
       context: ../../
       dockerfile: envs/docker/frontend.Dockerfile
+      target: development
     container_name: lakda-frontend
     ports:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://backend:8000
+      - npm_config_cache=/tmp/.npm
     env_file:
       - ../../.env
     networks:
@@ -62,8 +65,10 @@ services:
     depends_on:
       - backend
     volumes:
-      - ../../:/app
-      - frontend_node_modules:/app/node_modules
+      - ../../frontend:/app
+      - /app/node_modules
+      - /app/.next
+    command: ["sh", "-c", "npm install && npm run dev"]
   
   # ローカルLLM（オプション）
   ollama:
@@ -82,8 +87,6 @@ volumes:
   neo4j_data:
   neo4j_logs:
   ollama_models:
-  backend_venv: {}
-  frontend_node_modules: {}
 
 networks:
   lakda-network:
