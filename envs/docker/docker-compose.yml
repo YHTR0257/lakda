@@ -1,7 +1,7 @@
 services:
-  kra-database:
+  lakda-database:
     image: neo4j:5
-    container_name: kra-database
+    container_name: lakda-database
     ports:
       - "7474:7474"
       - "7687:7687"
@@ -13,7 +13,7 @@ services:
       - neo4j_data:/data
       - neo4j_logs:/logs
     networks:
-      - kra-network
+      - lakda-network
     healthcheck:
       test: ["CMD-SHELL", "cypher-shell -u neo4j -p ${NEO4J_PASSWORD:-password} 'RETURN 1'"]
       interval: 10s
@@ -24,11 +24,11 @@ services:
     build:
       context: ../../
       dockerfile: envs/docker/backend.Dockerfile
-    container_name: kra-backend
+    container_name: lakda-backend
     ports:
       - "8000:8000"
     environment:
-      - NEO4J_URI=bolt://kra-database:7687
+      - NEO4J_URI=bolt://lakda-database:7687
       - NEO4J_USER=neo4j
       - NEO4J_PASSWORD=${NEO4J_PASSWORD:-password}
       - LLM_API_KEY=${LLM_API_KEY:-}
@@ -37,20 +37,20 @@ services:
     env_file:
       - ../../.env
     depends_on:
-      kra-database:
+      lakda-database:
         condition: service_healthy
     networks:
-      - kra-network
+      - lakda-network
     volumes:
       - ../../:/app
       - backend_venv:/app/.venv
-    command: ["uvicorn", "kra.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    command: ["uvicorn", "lakda.main:app", "--host", "0.0.0.0", "--port", "8000"]
   
   frontend:
     build:
       context: ../../
       dockerfile: envs/docker/frontend.Dockerfile
-    container_name: kra-frontend
+    container_name: lakda-frontend
     ports:
       - "3000:3000"
     environment:
@@ -58,7 +58,7 @@ services:
     env_file:
       - ../../.env
     networks:
-      - kra-network
+      - lakda-network
     depends_on:
       - backend
     volumes:
@@ -68,13 +68,13 @@ services:
   # ローカルLLM（オプション）
   ollama:
     image: ollama/ollama:latest
-    container_name: kra-ollama
+    container_name: lakda-ollama
     ports:
       - "11434:11434"
     volumes:
       - ollama_models:/root/.ollama
     networks:
-      - kra-network
+      - lakda-network
     profiles:
       - local-llm  # オプショナルサービス
 
@@ -86,5 +86,5 @@ volumes:
   frontend_node_modules: {}
 
 networks:
-  kra-network:
+  lakda-network:
     driver: bridge

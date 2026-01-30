@@ -1,11 +1,11 @@
 #!/bin/bash
-# Knowledge Retrieval Assistant - Setup Script
+# LAKDA - Setup Script
 # This script sets up the development environment for Phase 2
 
 set -e  # Exit on error
 
 echo "========================================="
-echo "Knowledge Retrieval Assistant Setup"
+echo "LAKDA Setup"
 echo "========================================="
 echo ""
 
@@ -141,11 +141,11 @@ echo ""
 # ========================================
 echo "[6/6] Verifying installation..."
 
-# Check if kra command is available
-if uv run kra --help &> /dev/null; then
-    echo "✓ kra CLI command is working"
+# Check if lakda command is available
+if uv run lakda --help &> /dev/null; then
+    echo "✓ lakda CLI command is working"
 else
-    echo "⚠ kra CLI command may not be ready yet"
+    echo "⚠ lakda CLI command may not be ready yet"
 fi
 
 # Check MCP servers
@@ -162,7 +162,7 @@ echo "Next steps:"
 echo "  1. Login to Gemini CLI with web authentication (Phase 2 uses this)"
 echo "  2. (Optional) Adjust config/config.toml for search parameters"
 echo "  3. Place documents in data/documents/{domain}/ or data/uploads/"
-echo "  4. Run: uv run kra --help"
+echo "  4. Run: uv run lakda --help"
 echo ""
 echo "Note: Phase 2 uses Gemini CLI with web authentication."
 echo "      API key configuration (config/gemini_config.json) is only needed for Phase 3."

@@ -13,7 +13,7 @@ console = Console()
 
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="kra")
+@click.version_option(version="0.1.0", prog_name="lakda")
 def cli() -> None:
     """Knowledge Retrieval Assistant - Domain-agnostic RAG system."""
     pass
@@ -39,10 +39,10 @@ def ask(question: str | None, file: str | None, verbose: bool) -> None:
     You can provide the question either as a command line argument or from a file.
 
     Examples:
-        kra ask "How do I handle authentication errors?"
-        kra ask "What is the system architecture?" -v
-        kra ask --file /tmp/question.txt
-        kra ask -f /tmp/question.txt -v
+        lakda ask "How do I handle authentication errors?"
+        lakda ask "What is the system architecture?" -v
+        lakda ask --file /tmp/question.txt
+        lakda ask -f /tmp/question.txt -v
     """
     # Read question from file or command line
     if file:
@@ -125,8 +125,8 @@ def upload(file_path: str, target: str) -> None:
     3. Placed in data/documents/{target}/
 
     Examples:
-        kra upload docs/api-guide.pdf --target api-guides
-        kra upload manual.docx -t error-handling
+        lakda upload docs/api-guide.pdf --target api-guides
+        lakda upload manual.docx -t error-handling
     """
     console.print(f"[bold cyan]Uploading:[/bold cyan] {file_path}")
     console.print(f"[dim]Target: data/documents/{target}/[/dim]")
@@ -160,8 +160,8 @@ def feedback(format: str) -> None:
     """View feedback logs for generated answers.
 
     Examples:
-        kra feedback
-        kra feedback --format json
+        lakda feedback
+        lakda feedback --format json
     """
     console.print(f"[bold cyan]Feedback Logs[/bold cyan] (format: {format})")
 
