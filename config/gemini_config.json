@@ -1,0 +1,7 @@
+{
+  "gemini_cli_path": "/Users/teramoto/.npm-global/bin/gemini",
+  "timeout": 120,
+  "model": "gemini-2.0-flash-exp",
+  "temperature": 0.7,
+  "max_tokens": 2048
+}

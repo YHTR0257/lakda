@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "markdown-rag": {
+      "comment": "MCP-Markdown-RAG - Semantic search for markdown documents",
+      "serverPath": "/Users/teramoto/dev/mcp-servers/MCP-Markdown-RAG",
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/Users/teramoto/dev/mcp-servers/MCP-Markdown-RAG",
+        "run",
+        "server.py"
+      ]
+    }
+  }
+}

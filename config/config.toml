@@ -1,0 +1,56 @@
+# Knowledge Retrieval Assistant Configuration
+# Phase 2: MCP-Markdown-RAG + Gemini CLI integration
+
+# Gemini CLI settings
+[gemini]
+# Path to Gemini CLI executable
+# If not specified, assumes 'gemini' is in PATH
+cli_path = "/Users/teramoto/.npm-global/bin/gemini"
+
+# Default timeout for CLI calls (seconds)
+timeout = 30
+
+# Model to use (optional, defaults to Gemini CLI default)
+# Examples: "gemini-2.0-flash-exp", "gemini-1.5-pro", etc.
+model = ""
+
+# Output format: "text", "json", "stream-json"
+output_format = "text"
+
+# Approval mode: "default", "auto_edit", "yolo"
+# - default: prompt for approval
+# - auto_edit: auto-approve edit tools
+# - yolo: auto-approve all tools
+approval_mode = "default"
+
+# Enable debug mode
+debug = false
+
+# MCP-Markdown-RAG document settings
+[documents]
+# Root directory for document search
+root_path = "data/documents"
+
+# Specific paths to search (optional - restricts to specific domains)
+# Uncomment to search only specific domains:
+# paths = ["data/documents/error-handling"]
+
+[search]
+# Hybrid search weights (BM25 + Semantic)
+semantic_weight = 1.0    # Weight for semantic (vector) search
+keyword_weight = 1.0     # Weight for keyword (BM25) search
+
+# Maximum number of results to return
+max_results = 5
+
+[embedding]
+# Embedding model for semantic search
+# Options: "openai", "local" (sentence-transformers), etc.
+model = "local"
+
+# For local embeddings (sentence-transformers)
+local_model_name = "all-MiniLM-L6-v2"
+
+# For OpenAI embeddings (requires OPENAI_API_KEY environment variable)
+# model = "openai"
+# openai_model_name = "text-embedding-ada-002"

@@ -1,4 +1,4 @@
-# Knowledge Retrieval Assistant System (知識検索アシスタントシステム)
+# LAKDA System (LLM-Assisted Knowledge Discovery Application)
 
 ## Project Overview
 
@@ -7,9 +7,9 @@
 ## Directory Structure
 
 ```
-knowledge-retrieval-assistant/
+lakda/
 ├── backend/                     # FastAPIバックエンド
-│   ├── src/kra/                 # コアモジュール
+│   ├── src/lakda/                 # コアモジュール
 │   │   ├── api/                 # APIエンドポイント
 │   │   ├── cli/                 # CLIコマンド
 │   │   ├── core/                # ビジネスロジック

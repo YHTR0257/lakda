@@ -23,7 +23,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
 
 # 開発時はホットリロード有効
-CMD ["uvicorn", "kra.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "lakda.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 # =====================
 # Production Stage
@@ -50,4 +50,4 @@ RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 8000
-CMD ["uvicorn", "kra.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "lakda.main:app", "--host", "0.0.0.0", "--port", "8000"]

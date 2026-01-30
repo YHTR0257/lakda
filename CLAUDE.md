@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Knowledge Retrieval Assistant (知識検索アシスタントシステム)** - A domain-agnostic RAG system that searches local/cloud documents to answer domain-specific questions with context and citations. Initially designed for error handling support, but applicable to architecture design, business logic, and technical documentation domains.
+**LAKDA (LLM-Assisted Knowledge Discovery Application)** - A domain-agnostic RAG system that searches local/cloud documents to answer domain-specific questions with context and citations. Initially designed for error handling support, but applicable to architecture design, business logic, and technical documentation domains.
 
 ## Development Commands
 
@@ -17,7 +17,7 @@ uv sync                  # Install dependencies from pyproject.toml
 ### Running the Application
 ```bash
 # Phase 2: CLI-based question-answering (not yet implemented)
-python -m kra.main       # Entry point for question input/output
+python -m lakda.main       # Entry point for question input/output
 ```
 
 ### Testing
@@ -94,19 +94,19 @@ data/raw/
 
 | Module | Role | Phase 2 Behavior |
 |--------|------|------------------|
-| `backend/src/kra/main.py` | Entry point | Orchestrates CLI tools, user I/O, feedback recording |
-| `backend/src/kra/cli/commands.py` | CLI commands | CLI command definitions |
-| `backend/src/kra/api/ask.py` | Ask endpoint | Ask API endpoint (FT06) |
-| `backend/src/kra/api/upload.py` | Upload endpoint | Document upload API (FT02) |
-| `backend/src/kra/api/feedback.py` | Feedback endpoint | Feedback API (FT09) |
-| `backend/src/kra/core/processing/generator.py` | Answer generation | Calls Gemini CLI via subprocess (FT07) |
-| `backend/src/kra/core/processing/interpreter.py` | Question interpretation | Prompt templates for Gemini CLI (FT05) |
-| `backend/src/kra/core/ask/service.py` | Ask service | Ask business logic |
-| `backend/src/kra/core/ask/retrieval.py` | Document retrieval | Document retrieval logic (FT06) |
-| `backend/src/kra/core/documents/converter.py` | Document conversion | markitdown integration (FT03) |
-| `backend/src/kra/core/documents/metadata.py` | Metadata generation | LLM-based Frontmatter generation (FT04) |
-| `backend/src/kra/core/documents/indexer.py` | Document indexing | Index registration |
-| `backend/src/kra/core/feedback/service.py` | Feedback service | Feedback business logic (FT09) |
+| `backend/src/lakda/main.py` | Entry point | Orchestrates CLI tools, user I/O, feedback recording |
+| `backend/src/lakda/cli/commands.py` | CLI commands | CLI command definitions |
+| `backend/src/lakda/api/ask.py` | Ask endpoint | Ask API endpoint (FT06) |
+| `backend/src/lakda/api/upload.py` | Upload endpoint | Document upload API (FT02) |
+| `backend/src/lakda/api/feedback.py` | Feedback endpoint | Feedback API (FT09) |
+| `backend/src/lakda/core/processing/generator.py` | Answer generation | Calls Gemini CLI via subprocess (FT07) |
+| `backend/src/lakda/core/processing/interpreter.py` | Question interpretation | Prompt templates for Gemini CLI (FT05) |
+| `backend/src/lakda/core/ask/service.py` | Ask service | Ask business logic |
+| `backend/src/lakda/core/ask/retrieval.py` | Document retrieval | Document retrieval logic (FT06) |
+| `backend/src/lakda/core/documents/converter.py` | Document conversion | markitdown integration (FT03) |
+| `backend/src/lakda/core/documents/metadata.py` | Metadata generation | LLM-based Frontmatter generation (FT04) |
+| `backend/src/lakda/core/documents/indexer.py` | Document indexing | Index registration |
+| `backend/src/lakda/core/feedback/service.py` | Feedback service | Feedback business logic (FT09) |
 
 ### Data Storage Structure
 
@@ -145,7 +145,7 @@ uv add markitdown        # Add MarkItDown library for document conversion
 **2. Setup MCP-Markdown-RAG symbolic link**
 ```bash
 cd ~/dev/mcp-servers/MCP-Markdown-RAG
-ln -s ~/dev/github/YHTR0257/knowledge-retrieval-assistant/data/documents documents
+ln -s ~/dev/github/YHTR0257/lakda/data/documents documents
 ```
 
 This works around the `server.py:59` constraint where `target_path = os.path.join(current_working_directory, directory)` assumes documents are in the MCP server's directory.
@@ -159,10 +159,10 @@ gemini chat --mcp config/mcp_config.json -c "Index documents in ./documents dire
 ### Adding New Documents
 
 1. Place PDF/Word files in `data/raw/{domain}/`
-2. Run document converter (uses MarkItDown library): `python -m kra.core.documents.converter`
-3. Generate metadata/Frontmatter via LLM: `python -m kra.core.documents.metadata`
+2. Run document converter (uses MarkItDown library): `python -m lakda.core.documents.converter`
+3. Generate metadata/Frontmatter via LLM: `python -m lakda.core.documents.metadata`
 4. Processed files are stored in `data/processed/chunks/` and `data/processed/metadata/`
-5. Run indexer: `python -m kra.core.documents.indexer`
+5. Run indexer: `python -m lakda.core.documents.indexer`
 
 ### Configuring Search Behavior
 

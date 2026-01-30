@@ -1,6 +1,10 @@
-# Knowledge Retrieval Assistant
+# LAKDA
+LLM-Assisted Knowledge Discovery Application
 
-ユーザーからの質問に対して高品質な回答を生成し、関連するドキュメントを検索・提示するRAGシステムです。
+LAKDAは、膨大な情報を「咀嚼」し、自分だけの「知識」へと変えるためのパーソナル・アシスタントです。 砂漠のような情報の海を渡るあなたに、確かな貯蔵（アーカイブ）と鋭い洞察（ディスカバリー）を提供します。
+
+コンセプトは以下の通りとなっています。
+
 
 ## Tech Stack
 
@@ -16,9 +20,9 @@
 ## Project Structure
 
 ```
-knowledge-retrieval-assistant/
+lakda/
 ├── backend/                     # FastAPIバックエンド
-│   ├── src/kra/                 # コアモジュール
+│   ├── src/lakda/                 # コアモジュール
 │   │   ├── api/                 # APIエンドポイント
 │   │   ├── cli/                 # CLIコマンド
 │   │   ├── core/                # ビジネスロジック

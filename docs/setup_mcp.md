@@ -76,7 +76,7 @@ MCP-Markdown-RAG/server.py:59の制約を回避するため、シンボリック
 
 ```zsh
 cd ~/dev/mcp-servers/MCP-Markdown-RAG
-ln -s ~/dev/github/YHTR0257/knowledge-retrieval-assistant/data/documents documents
+ln -s ~/dev/github/YHTR0257/lakda/data/documents documents
 
 # 確認
 ls -l documents  # シンボリックリンクが作成されていることを確認
@@ -136,7 +136,7 @@ data/documents/
 
 ```zsh
 # Python環境
-uv run kra --help
+uv run lakda --help
 
 # Gemini CLI
 gemini --version
@@ -149,7 +149,7 @@ gemini login  # Web認証 (Phase 2で必須)
 |------|---------|
 | Gemini CLIが見つからない | `npm install -g @google/gemini-cli`<br/>`which gemini` でパス確認 |
 | MCP-Markdown-RAGの埋め込みモデルダウンロード失敗 | インターネット接続確認<br/>初回実行時に自動ダウンロード(約50MB) |
-| シンボリックリンクが作成できない | パスを確認: `ls ~/dev/github/YHTR0257/knowledge-retrieval-assistant/data/documents`<br/>権限を確認: `ls -l ~/dev/mcp-servers/MCP-Markdown-RAG/` |
+| シンボリックリンクが作成できない | パスを確認: `ls ~/dev/github/YHTR0257/lakda/data/documents`<br/>権限を確認: `ls -l ~/dev/mcp-servers/MCP-Markdown-RAG/` |
 | MarkItDownライブラリのインポートエラー | `uv sync` で依存関係を再同期<br/>pyproject.tomlにmarkitdownが含まれていることを確認 |
 
 ## 次のステップ
@@ -159,7 +159,7 @@ gemini login  # Web認証 (Phase 2で必須)
 3. **設定ファイルの作成**: `config/mcp_config.json` と `config/config.toml` を設定
 4. **サンプルドキュメント配置**: `data/documents/{domain}/` にMarkdownファイルを配置
 5. **インデックス作成**: `gemini chat --mcp config/mcp_config.json -c "Index documents in ./documents"`
-6. **動作確認**: `uv run python -m kra.main` でアプリケーション起動確認
+6. **動作確認**: `uv run python -m lakda.main` でアプリケーション起動確認
 
 ## リソース
 
