@@ -15,11 +15,15 @@ services:
     networks:
       - lakda-network
     healthcheck:
-      test: ["CMD-SHELL", "cypher-shell -u neo4j -p ${NEO4J_PASSWORD:-password} 'RETURN 1'"]
+      test:
+        [
+          "CMD-SHELL",
+          "cypher-shell -u neo4j -p ${NEO4J_PASSWORD:-password} 'RETURN 1'",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
-  
+
   backend:
     build:
       context: ../../
@@ -45,8 +49,9 @@ services:
     volumes:
       - ../../backend:/app
       - /app/.venv
-    command: ["uvicorn", "lakda.main:app", "--host", "0.0.0.0", "--port", "8000"]
-  
+    command:
+      ["uvicorn", "lakda.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
   frontend:
     build:
       context: ../../
@@ -69,19 +74,19 @@ services:
       - /app/node_modules
       - /app/.next
     command: ["sh", "-c", "npm install && npm run dev"]
-  
+
   # ローカルLLM（オプション）
   ollama:
     image: ollama/ollama:latest
     container_name: lakda-ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
     ports:
       - "11434:11434"
     volumes:
       - ollama_models:/root/.ollama
     networks:
       - lakda-network
-    profiles:
-      - local-llm  # オプショナルサービス
 
 volumes:
   neo4j_data:
