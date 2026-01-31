@@ -1,5 +1,5 @@
 [project]
-name = "knowledge-retrieval-assistant"
+name = "lakda"
 version = "0.1.0"
 description = "Domain-agnostic RAG system for searching documents and generating context-aware answers with citations"
 requires-python = ">=3.12"
@@ -16,21 +16,25 @@ classifiers = [
 ]
 
 dependencies = [
+    "anthropic>=0.77.0",
     # Core dependencies (production)
     "click>=8.1.0",           # CLI framework
-    "fastapi>=0.100.0",       # REST API framework
+    "fastapi[standard]>=0.100.0",
+    "google-genai>=1.61.0",
     "httpx>=0.24.0",          # Async HTTP client for API calls
     "markitdown>=0.1.4",      # Document conversion
     "neo4j>=6.1.0",
+    "openai>=2.16.0",
     "pydantic>=2.0.0",        # Data validation
-    "pytest>=9.0.2",
+    "pytest>=9.0.2",          # Testing framework
+    "python-dotenv>=1.2.1",
     "pyyaml>=6.0.0",          # YAML parsing for configs
+    "respx>=0.22.0",
     "rich>=13.0.0",           # Rich terminal output
     "uvicorn>=0.23.0",        # ASGI server
 ]
 
-[project.optional-dependencies]
-# Development dependencies
+[dependency-groups]
 dev = [
     "black>=23.7.0",          # Code formatter
     "ipython>=8.12.0",        # Interactive shell
@@ -38,9 +42,14 @@ dev = [
     "pytest>=7.4.0",          # Testing framework
     "pytest-asyncio>=0.21.0", # Async test support
     "pytest-cov>=4.1.0",      # Coverage reporting
+    "pytest-mock>=3.12.0",    # Mock support for pytest
+    "respx>=0.21.0",          # Mock httpx requests
     "ruff>=0.0.280",          # Linter
     "types-pyyaml>=6.0.12",   # Type stubs for PyYAML
 ]
+
+[tool.uv]
+link-mode = "copy"
 
 [project.scripts]
 lakda = "lakda.main:cli"
@@ -59,9 +68,7 @@ python_classes = "Test*"
 python_functions = "test_*"
 addopts = [
     "--strict-markers",
-    "--cov=lakda",
-    "--cov-report=term-missing",
-    "--cov-report=html",
+    "-v",
 ]
 
 [tool.black]
