@@ -92,21 +92,47 @@ data/raw/
 
 ### Module Responsibilities
 
-| Module | Role | Phase 2 Behavior |
-|--------|------|------------------|
-| `backend/src/lakda/main.py` | Entry point | Orchestrates CLI tools, user I/O, feedback recording |
-| `backend/src/lakda/cli/commands.py` | CLI commands | CLI command definitions |
-| `backend/src/lakda/api/ask.py` | Ask endpoint | Ask API endpoint (FT06) |
-| `backend/src/lakda/api/upload.py` | Upload endpoint | Document upload API (FT02) |
-| `backend/src/lakda/api/feedback.py` | Feedback endpoint | Feedback API (FT09) |
-| `backend/src/lakda/core/processing/generator.py` | Answer generation | Calls Gemini CLI via subprocess (FT07) |
-| `backend/src/lakda/core/processing/interpreter.py` | Question interpretation | Prompt templates for Gemini CLI (FT05) |
-| `backend/src/lakda/core/ask/service.py` | Ask service | Ask business logic |
-| `backend/src/lakda/core/ask/retrieval.py` | Document retrieval | Document retrieval logic (FT06) |
-| `backend/src/lakda/core/documents/converter.py` | Document conversion | markitdown integration (FT03) |
-| `backend/src/lakda/core/documents/metadata.py` | Metadata generation | LLM-based Frontmatter generation (FT04) |
-| `backend/src/lakda/core/documents/indexer.py` | Document indexing | Index registration |
-| `backend/src/lakda/core/feedback/service.py` | Feedback service | Feedback business logic (FT09) |
+#### Layer Overview
+
+```
+API Layer (api/)
+    ↓ リクエスト受付
+Orchestrator Layer (agents/)
+    ↓ リクエスト判定・ツール選択
+    ↓ 適切なLLMモデル選択
+LLM Layer (llm/)
+    ↓ モデル接続・プロンプト管理
+Service Layer (services/)
+    ↓ 実処理（LLM or スクリプト）
+Orchestrator Layer (agents/)
+    ↓ 結果確認
+Response
+```
+
+#### Module Details
+
+| Layer | Module | Role | Phase 2 Behavior |
+|-------|--------|------|------------------|
+| Entry | `lakda/main.py` | Entry point | Orchestrates CLI tools, user I/O |
+| CLI | `lakda/cli/commands.py` | CLI commands | CLI command definitions |
+| API | `lakda/api/ask.py` | Ask endpoint | Ask API endpoint (FT06) |
+| API | `lakda/api/upload.py` | Upload endpoint | Document upload API (FT02) |
+| API | `lakda/api/feedback.py` | Feedback endpoint | Feedback API (FT09) |
+| Orchestrator | `lakda/agents/orchestrator.py` | Base orchestrator | リクエスト判定・ツール選択・結果確認 |
+| Orchestrator | `lakda/agents/ask_agent.py` | Ask orchestrator | 質問処理オーケストレーション |
+| Orchestrator | `lakda/agents/document_agent.py` | Document orchestrator | ドキュメント処理オーケストレーション |
+| Orchestrator | `lakda/agents/feedback_agent.py` | Feedback orchestrator | フィードバック処理オーケストレーション |
+| LLM | `lakda/llm/client.py` | LLM client | モデル接続抽象化 |
+| LLM | `lakda/llm/models.py` | Model management | モデル設定・選択 |
+| LLM | `lakda/llm/prompts/` | Prompt management | プロンプトテンプレート管理 |
+| Service | `lakda/services/ask/service.py` | Ask service | Ask business logic |
+| Service | `lakda/services/ask/retrieval.py` | Document retrieval | Document retrieval logic (FT06) |
+| Service | `lakda/services/ask/generator.py` | Answer generation | Calls LLM via llm/ layer (FT07) |
+| Service | `lakda/services/ask/interpreter.py` | Question interpretation | Question interpretation (FT05) |
+| Service | `lakda/services/documents/converter.py` | Document conversion | markitdown integration (FT03) |
+| Service | `lakda/services/documents/metadata.py` | Metadata generation | LLM-based Frontmatter generation (FT04) |
+| Service | `lakda/services/documents/indexer.py` | Document indexing | Index registration |
+| Service | `lakda/services/feedback/service.py` | Feedback service | Feedback business logic (FT09) |
 
 ### Data Storage Structure
 
@@ -159,10 +185,10 @@ gemini chat --mcp config/mcp_config.json -c "Index documents in ./documents dire
 ### Adding New Documents
 
 1. Place PDF/Word files in `data/raw/{domain}/`
-2. Run document converter (uses MarkItDown library): `python -m lakda.core.documents.converter`
-3. Generate metadata/Frontmatter via LLM: `python -m lakda.core.documents.metadata`
+2. Run document converter (uses MarkItDown library): `python -m lakda.services.documents.converter`
+3. Generate metadata/Frontmatter via LLM: `python -m lakda.services.documents.metadata`
 4. Processed files are stored in `data/processed/chunks/` and `data/processed/metadata/`
-5. Run indexer: `python -m lakda.core.documents.indexer`
+5. Run indexer: `python -m lakda.services.documents.indexer`
 
 ### Configuring Search Behavior
 
