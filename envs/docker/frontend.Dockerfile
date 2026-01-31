@@ -18,6 +18,9 @@ FROM node:22-slim AS development
 
 WORKDIR /app
 
+# npm キャッシュディレクトリを設定
+ENV npm_config_cache=/tmp/.npm
+
 # 依存関係を前のステージからコピー
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY frontend/package*.json ./

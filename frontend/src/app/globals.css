@@ -1,9 +1,7 @@
- @tailwind base;
- @tailwind components;
- @tailwind utilities;
+@import "tailwindcss";
 
 /* カスタムスタイルがあればここに */
- @layer base {
+@layer base {
   h1 {
     @apply text-3xl font-bold;
   }
@@ -12,8 +10,8 @@
   }
 }
 
- @layer components {
+@layer components {
   .btn-primary {
-    @apply bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded;
+    @apply rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-600;
   }
 }
