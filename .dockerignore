@@ -62,6 +62,12 @@ frontend/.nyc_output/
 frontend/package-lock.json
 
 # ========================================
+# Ollama Models
+# ========================================
+ollama_models/
+ollama/ollama_models/
+
+# ========================================
 # Shared Resources
 # ========================================
 
