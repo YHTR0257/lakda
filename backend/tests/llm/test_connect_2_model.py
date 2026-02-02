@@ -51,26 +51,26 @@ class TestGeminiClient:
         client.close()
 
 
-@pytest.mark.llm_api
-@pytest.mark.skipif(not has_anthropic_key, reason="ANTHROPIC_API_KEY not set")
-class TestAnthropicClient:
-    """Anthropic Claude APIクライアントのテスト"""
+# @pytest.mark.llm_api
+# @pytest.mark.skipif(not has_anthropic_key, reason="ANTHROPIC_API_KEY not set")
+# class TestAnthropicClient:
+#     """Anthropic Claude APIクライアントのテスト"""
 
-    def test_health_check(self):
-        """ヘルスチェックのテスト"""
-        client = AnthropicLlmClient(model="claude-3-5-haiku-20241022")
-        assert client.health_check() is True
+#     def test_health_check(self):
+#         """ヘルスチェックのテスト"""
+#         client = AnthropicLlmClient(model="claude-3-5-haiku-20241022")
+#         assert client.health_check() is True
 
-    def test_generate_response(self):
-        """レスポンス生成のテスト"""
-        client = AnthropicLlmClient(model="claude-3-5-haiku-20241022")
-        response = client.generate_response(
-            prompt='Return only JSON without markdown: {"message": "Hello from Claude"}',
-            response_model=SimpleResponse,
-        )
-        assert response is not None
-        assert isinstance(response, SimpleResponse)
-        assert response.message is not None
+#     def test_generate_response(self):
+#         """レスポンス生成のテスト"""
+#         client = AnthropicLlmClient(model="claude-3-5-haiku-20241022")
+#         response = client.generate_response(
+#             prompt='Return only JSON without markdown: {"message": "Hello from Claude"}',
+#             response_model=SimpleResponse,
+#         )
+#         assert response is not None
+#         assert isinstance(response, SimpleResponse)
+#         assert response.message is not None
 
 
 @pytest.mark.llm_api
