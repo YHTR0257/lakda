@@ -63,7 +63,7 @@ lakda/   # プロジェクトルート
 backend/
 ├── src/                             # アプリケーションコード
 │   └── lakda/                         # コアモジュール
-│       ├── __init__.py              # kraパッケージ初期化
+│       ├── __init__.py              # lakdaパッケージ初期化
 │       ├── main.py                  # アプリケーションエントリーポイント
 │       ├── api/                     # APIレイヤー（routes/を省略）
 │       │    ├── __init__.py
@@ -74,22 +74,35 @@ backend/
 │       ├── cli/                     # CLI関連コード
 │       │    ├── __init__.py
 │       │    └── commands.py             # CLIコマンド定義
-│       ├── core/                    # ビジネスロジック
+│       ├── agents/                  # オーケストレーター層
 │       │    ├── __init__.py
-│       │    ├── ask/                    # 相談機能
+│       │    ├── orchestrator.py         # リクエスト判定・ツール選択・結果確認
+│       │    ├── ask_agent.py            # 質問処理オーケストレーション
+│       │    ├── document_agent.py       # ドキュメント処理オーケストレーション
+│       │    └── feedback_agent.py       # フィードバック処理オーケストレーション
+│       ├── llm/                     # LLMクライアント抽象化層
+│       │    ├── __init__.py
+│       │    ├── client.py               # LLMモデル接続
+│       │    ├── models.py               # モデル管理・設定
+│       │    └── prompts/                # プロンプト管理
+│       │         ├── __init__.py
+│       │         ├── ask.py                 # 質問処理プロンプト
+│       │         ├── document.py            # ドキュメント処理プロンプト
+│       │         └── feedback.py            # フィードバック処理プロンプト
+│       ├── services/                # ツール層（実処理）
+│       │    ├── __init__.py
+│       │    ├── ask/                    # 質問処理ツール
 │       │    │    ├── __init__.py
-│       │    │    ├── service.py             # 相談サービス
-│       │    │    └── retrieval.py           # ドキュメント検索
-│       │    ├── processing/             # Q&A処理
-│       │    │    ├── __init__.py
+│       │    │    ├── service.py             # 質問サービス
+│       │    │    ├── retrieval.py           # ドキュメント検索
 │       │    │    ├── generator.py           # 回答生成
 │       │    │    └── interpreter.py         # 質問解釈
-│       │    ├── documents/              # ドキュメント処理（インジェスト）
+│       │    ├── documents/              # ドキュメント処理ツール（インジェスト）
 │       │    │    ├── __init__.py
 │       │    │    ├── converter.py           # markitdown統合（PDF/Word→Markdown変換）
 │       │    │    ├── metadata.py            # メタデータ・Frontmatter生成
 │       │    │    └── indexer.py             # インデックス登録
-│       │    └── feedback/               # フィードバック機能
+│       │    └── feedback/               # フィードバック処理ツール
 │       │         ├── __init__.py
 │       │         └── service.py             # フィードバックサービス
 │       ├── db/                      # データアクセス層
@@ -118,11 +131,18 @@ backend/
      │    ├── test_ask.py
      │    ├── test_upload.py
      │    └── test_feedback.py
-     ├── core/                           # ビジネスロジックテスト
+     ├── agents/                         # オーケストレーター層テスト
+     │    ├── test_orchestrator.py
+     │    ├── test_ask_agent.py
+     │    ├── test_document_agent.py
+     │    └── test_feedback_agent.py
+     ├── llm/                            # LLM層テスト
+     │    ├── test_client.py
+     │    └── test_models.py
+     ├── services/                       # ツール層テスト
      │    ├── ask/
      │    │    ├── test_service.py
-     │    │    └── test_retrieval.py
-     │    ├── processing/
+     │    │    ├── test_retrieval.py
      │    │    ├── test_generator.py
      │    │    └── test_interpreter.py
      │    ├── documents/

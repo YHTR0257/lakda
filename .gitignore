@@ -168,3 +168,9 @@ temp/
 # vscode settings
 .vscode/settings.json
 lakda.code-workspace
+
+# ========================================
+# LLM Models
+# ========================================
+
+ollama/ollama_models/

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
-    title="Knowledge Retrieval Assistant",
+    title="lakda Backend API",
     version="0.1.0",
 )
 
