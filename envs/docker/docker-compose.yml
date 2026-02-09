@@ -10,10 +10,9 @@ services:
     environment:
       - NEO4J_AUTH=${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-password}
       - NEO4J_PLUGINS=${NEO4J_PLUGINS:-["apoc"]}
-      - NEO4J_dbms_security_procedures_unrestricted=${NEO4J_UNRESTRICTED_PROCEDURES:-apoc.*}
     volumes:
-      - neo4j_data:/data
-      - neo4j_logs:/logs
+      - ../../data/neo4j:/data/
+      - ../../logs/neo4j:/logs/
     networks:
       - lakda-network
     healthcheck:
@@ -32,17 +31,10 @@ services:
       dockerfile: envs/docker/backend.Dockerfile
       target: ${BACKEND_BUILD_TARGET:-development}
     container_name: ${BACKEND_CONTAINER_NAME:-lakda-backend}
-    ports:
-      - "${BACKEND_PORT:-8000}:8000"
     env_file:
       - ../../.env
-    environment:
-      - NEO4J_URI_BOLT=${NEO4J_URI_BOLT:-bolt://lakda-database:7687}
-      - NEO4J_URI_NEO4J=${NEO4J_URI_NEO4J:-neo4j://lakda-database:7687}
-      - NEO4J_USER=${NEO4J_USER:-neo4j}
-      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-password}
-      - OLLAMA_URL=${OLLAMA_URL:-http://host.docker.internal:11434}
-      - LOG_LEVEL=${LOG_LEVEL:-info}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
     depends_on:
       lakda-database:
         condition: service_healthy
@@ -50,7 +42,11 @@ services:
       - lakda-network
     volumes:
       - ../../backend:/app
+      - ../../data/documents:/app/data/documents
+      - ../../logs/backend:/app/logs
       - /app/.venv
+      - ../../.env:/app/.env
+      - ../../scripts/backend:/app/scripts
     command:
       [
         "uvicorn",
@@ -87,6 +83,7 @@ services:
       - backend
     volumes:
       - ../../frontend:/app
+      - ../../logs/frontend:/app/logs
       - /app/node_modules
       - /app/.next
     command: ["sh", "-c", "npm install && npm run dev"]
@@ -100,9 +97,7 @@ services:
   # host.docker.internal:11434 経由でアクセス
   # ホストでの起動: brew install ollama && ollama serve
 
-volumes:
-  neo4j_data:
-  neo4j_logs:
+volumes: {}
 
 networks:
   lakda-network:
