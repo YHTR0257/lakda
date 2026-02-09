@@ -72,8 +72,6 @@ ollama/ollama_models/
 # ========================================
 
 # Environment / Secrets
-.env
-.env.*
 envs/
 *.key
 *.pem
