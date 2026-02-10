@@ -9,10 +9,10 @@ import os
 import pytest
 from pydantic import BaseModel
 
-from lakda.llm.anthropic import AnthropicLlmClient
-from lakda.llm.gemini import GeminiLlmClient
-from lakda.llm.ollama import OllamaLlmClient
-from lakda.llm.open_router import OpenRouterLlmClient
+from lakda.llm.providers.anthropic import AnthropicLlmClient
+from lakda.llm.providers.google_genai import GoogleGenAILlmClient
+from lakda.llm.providers.ollama import OllamaLlmClient
+from lakda.llm.providers.openrouter import OpenRouterLlmClient
 
 
 class SimpleResponse(BaseModel):
@@ -22,25 +22,24 @@ class SimpleResponse(BaseModel):
 
 
 # 環境変数の存在チェック
-has_gemini_key = os.getenv("GEMINI_API_KEY") is not None
+has_google_key = os.getenv("GOOGLE_API_KEY") is not None
 has_anthropic_key = os.getenv("ANTHROPIC_API_KEY") is not None
 has_openrouter_key = os.getenv("OPENROUTER_API_KEY") is not None
 
 
 @pytest.mark.llm_api
-@pytest.mark.skipif(not has_gemini_key, reason="GEMINI_API_KEY not set")
-class TestGeminiClient:
-    """Gemini APIクライアントのテスト"""
+@pytest.mark.skipif(not has_google_key, reason="GOOGLE_API_KEY not set")
+class TestGoogleGenAIClient:
+    """Google GenAI APIクライアントのテスト"""
 
-    def test_health_check(self):
+    def test_health_check(self) -> None:
         """ヘルスチェックのテスト"""
-        client = GeminiLlmClient(model="gemini-2.5-flash-lite")
+        client = GoogleGenAILlmClient(model="gemini-2.5-flash-lite")
         assert client.health_check() is True
-        client.close()
 
-    def test_generate_response(self):
+    def test_generate_response(self) -> None:
         """レスポンス生成のテスト"""
-        client = GeminiLlmClient(model="gemini-2.5-flash-lite")
+        client = GoogleGenAILlmClient(model="gemini-2.5-flash-lite")
         response = client.generate_response(
             prompt='Return JSON: {"message": "Hello from Gemini"}',
             response_model=SimpleResponse,
@@ -48,7 +47,6 @@ class TestGeminiClient:
         assert response is not None
         assert isinstance(response, SimpleResponse)
         assert response.message is not None
-        client.close()
 
 
 # @pytest.mark.llm_api
@@ -56,12 +54,12 @@ class TestGeminiClient:
 # class TestAnthropicClient:
 #     """Anthropic Claude APIクライアントのテスト"""
 
-#     def test_health_check(self):
+#     def test_health_check(self) -> None:
 #         """ヘルスチェックのテスト"""
 #         client = AnthropicLlmClient(model="claude-3-5-haiku-20241022")
 #         assert client.health_check() is True
 
-#     def test_generate_response(self):
+#     def test_generate_response(self) -> None:
 #         """レスポンス生成のテスト"""
 #         client = AnthropicLlmClient(model="claude-3-5-haiku-20241022")
 #         response = client.generate_response(
@@ -78,12 +76,12 @@ class TestGeminiClient:
 class TestOpenRouterClient:
     """OpenRouter APIクライアントのテスト"""
 
-    def test_health_check(self):
+    def test_health_check(self) -> None:
         """ヘルスチェックのテスト"""
         client = OpenRouterLlmClient(model="openai/gpt-oss-120b:free")
         assert client.health_check() is True
 
-    def test_generate_response(self):
+    def test_generate_response(self) -> None:
         """レスポンス生成のテスト"""
         client = OpenRouterLlmClient(model="openai/gpt-oss-120b:free")
         response = client.generate_response(
@@ -95,20 +93,35 @@ class TestOpenRouterClient:
         assert response.message is not None
 
 
-has_ollama_url = os.getenv("OLLAMA_URL") is not None
+def _is_ollama_reachable() -> bool:
+    """Ollamaサーバーに接続可能か確認する"""
+    url = os.getenv("OLLAMA_URL")
+    if not url:
+        return False
+    try:
+        import httpx
+
+        with httpx.Client(timeout=5) as client:
+            resp = client.get(f"{url}/api/tags")
+            return resp.status_code == 200
+    except Exception:
+        return False
+
+
+is_ollama_reachable = _is_ollama_reachable()
 
 
 @pytest.mark.llm_api
-@pytest.mark.skipif(not has_ollama_url, reason="OLLAMA_URL not set")
+@pytest.mark.skipif(not is_ollama_reachable, reason="Ollama server is not reachable")
 class TestOllamaClient:
     """Ollama APIクライアントのテスト"""
 
-    def test_health_check(self):
+    def test_health_check(self) -> None:
         """ヘルスチェックのテスト"""
         client = OllamaLlmClient(model="llama3.1:8b")
         assert client.health_check() is True
 
-    def test_generate_response(self):
+    def test_generate_response(self) -> None:
         """レスポンス生成のテスト"""
         client = OllamaLlmClient(model="llama3.1:8b")
         response = client.generate_response(
