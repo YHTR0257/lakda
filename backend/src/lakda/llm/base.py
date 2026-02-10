@@ -1,21 +1,54 @@
-"""LLMクライアントの基底クラス"""
+"""LlamaIndex LLMラッパー基底クラス"""
 
 from abc import ABC, abstractmethod
 from typing import Type, TypeVar
 
+from llama_index.core.llms import LLM
 from pydantic import BaseModel
+
+from lakda.llm.exceptions import LlmResponseParseError
+from lakda.llm.utils import map_llm_exceptions
 
 T = TypeVar("T", bound=BaseModel)
 
 
-class BaseLlmClient(ABC):
-    """LLMクライアントの抽象基底クラス
+class LlamaIndexLlmClient(ABC):
+    """LlamaIndex LLM ラッパー
 
     すべてのLLMクライアントはこのクラスを継承し、
-    generate_responseとhealth_checkメソッドを実装する必要があります。
+    health_checkメソッドを実装する必要があります。
     """
 
-    @abstractmethod
+    def __init__(self, llm: LLM) -> None:
+        """LlamaIndexLlmClientを初期化する
+
+        Args:
+            llm: LlamaIndex LLMインスタンス
+        """
+        self._llm = llm
+
+    @property
+    def llm(self) -> LLM:
+        """LlamaIndex LLM インスタンスを取得する（RAG統合用）
+
+        Returns:
+            LlamaIndex LLMインスタンス
+        """
+        return self._llm
+
+    @property
+    def model(self) -> str:
+        """使用中のモデル名を取得する
+
+        Returns:
+            モデル名
+        """
+        model_attr = getattr(self._llm, "model", None)
+        if model_attr is None:
+            return "unknown"
+        return str(model_attr)
+
+    @map_llm_exceptions
     def generate_response(self, prompt: str, response_model: Type[T]) -> T:
         """プロンプトに基づいてLLMからレスポンスを生成する
 
@@ -33,7 +66,11 @@ class BaseLlmClient(ABC):
             LlmTimeoutError: タイムアウトした場合
             LlmResponseParseError: レスポンスのパースに失敗した場合
         """
-        pass
+        structured_llm = self._llm.as_structured_llm(response_model)
+        response = structured_llm.complete(prompt)
+        if response.raw is None:
+            raise LlmResponseParseError("レスポンスにデータが含まれていません")
+        return response.raw
 
     @abstractmethod
     def health_check(self) -> bool:
@@ -43,3 +80,7 @@ class BaseLlmClient(ABC):
             接続が正常な場合はTrue、そうでない場合はFalse
         """
         pass
+
+
+# 後方互換性のためのエイリアス
+BaseLlmClient = LlamaIndexLlmClient
