@@ -15,3 +15,18 @@ class InterpretationResponse(BaseModel):
     intent: str = Field(..., description="The intent behind the question")
     timestamp: Optional[str] = Field(None, description="Timestamp of the interpretation response")
     confidence_score: Optional[float] = Field(None, description="Confidence score of the interpretation")
+
+class AskOptions(BaseModel):
+    max_results: Optional[int] = Field(5, description="Maximum number of results to return")
+
+class ConfirmRequest(BaseModel):
+    session_id: str = Field(..., description="Session identifier for tracking")
+    confirmed_question: str = Field(..., description="The question text that has been confirmed")
+    options: AskOptions
+
+class AnswerResponse(BaseModel):
+    session_id: str = Field(..., description="Session identifier for tracking")
+    question: str = Field(..., description="The question text to be answered")
+    answer: str = Field(..., description="The answer text provided")
+    sources: List[str] = Field(..., description="List of source document identifiers")
+    timestamp: Optional[str] = Field(None, description="Timestamp of the answer request")
