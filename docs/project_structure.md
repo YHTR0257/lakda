@@ -69,7 +69,7 @@ backend/
 │       │    ├── __init__.py
 │       │    ├── dependencies.py         # 依存性注入
 │       │    ├── ask.py                  # 相談エンドポイント
-│       │    ├── upload.py               # アップロードエンドポイント
+│       │    ├── documents.py            # ドキュメント管理エンドポイント
 │       │    └── feedback.py             # フィードバックエンドポイント
 │       ├── cli/                     # CLI関連コード
 │       │    ├── __init__.py
@@ -129,7 +129,7 @@ backend/
      ├── conftest.py                     # テストフィクスチャ
      ├── api/                            # APIレイヤーテスト
      │    ├── test_ask.py
-     │    ├── test_upload.py
+     │    ├── test_documents.py
      │    └── test_feedback.py
      ├── agents/                         # オーケストレーター層テスト
      │    ├── test_orchestrator.py
