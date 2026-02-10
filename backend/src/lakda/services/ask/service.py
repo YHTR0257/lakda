@@ -1,0 +1,1 @@
+from lakda.models.schemas.ask import AskRequest, AskResponse
