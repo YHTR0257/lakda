@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 from lakda.llm.providers.anthropic import AnthropicLlmClient
 from lakda.llm.providers.google_genai import GoogleGenAILlmClient
-from lakda.llm.providers.ollama import OllamaLlmClient
+from lakda.llm.providers.llamacpp import LlamaCppLlmClient
 from lakda.llm.providers.openrouter import OpenRouterLlmClient
 
 
@@ -93,39 +93,39 @@ class TestOpenRouterClient:
         assert response.message is not None
 
 
-def _is_ollama_reachable() -> bool:
-    """Ollamaサーバーに接続可能か確認する"""
-    url = os.getenv("OLLAMA_URL")
+def _is_llamacpp_reachable() -> bool:
+    """llama.cpp LLMサーバーに接続可能か確認する"""
+    url = os.getenv("LLAMACPP_LLM_URL")
     if not url:
         return False
     try:
         import httpx
 
         with httpx.Client(timeout=5) as client:
-            resp = client.get(f"{url}/api/tags")
+            resp = client.get(f"{url}/health")
             return resp.status_code == 200
     except Exception:
         return False
 
 
-is_ollama_reachable = _is_ollama_reachable()
+is_llamacpp_reachable = _is_llamacpp_reachable()
 
 
 @pytest.mark.llm_api
-@pytest.mark.skipif(not is_ollama_reachable, reason="Ollama server is not reachable")
-class TestOllamaClient:
-    """Ollama APIクライアントのテスト"""
+@pytest.mark.skipif(not is_llamacpp_reachable, reason="llama.cpp server is not reachable")
+class TestLlamaCppClient:
+    """llama.cpp APIクライアントのテスト"""
 
     def test_health_check(self) -> None:
         """ヘルスチェックのテスト"""
-        client = OllamaLlmClient(model="llama3.1:8b")
+        client = LlamaCppLlmClient(model="hf.co/unsloth/Qwen3.5-9B-GGUF:IQ4_NL")
         assert client.health_check() is True
 
     def test_generate_response(self) -> None:
         """レスポンス生成のテスト"""
-        client = OllamaLlmClient(model="llama3.1:8b")
+        client = LlamaCppLlmClient(model="hf.co/unsloth/Qwen3.5-9B-GGUF:IQ4_NL")
         response = client.generate_response(
-            prompt='Return only JSON: {"message": "Hello from Ollama"}',
+            prompt='Return only JSON: {"message": "Hello from llama.cpp"}',
             response_model=SimpleResponse,
         )
         assert response is not None

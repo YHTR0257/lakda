@@ -18,7 +18,7 @@ from lakda.llm.exceptions import (
 )
 from lakda.llm.providers.anthropic import AnthropicLlmClient
 from lakda.llm.providers.google_genai import GoogleGenAILlmClient
-from lakda.llm.providers.ollama import OllamaLlmClient
+from lakda.llm.providers.llamacpp import LlamaCppLlmClient
 from lakda.llm.providers.openrouter import OpenRouterLlmClient
 
 
@@ -98,8 +98,8 @@ class TestAnthropicLlmClientError:
         assert client.health_check() is False
 
 
-class TestOllamaLlmClientError:
-    """Ollamaクライアントの異常系テスト"""
+class TestLlamaCppLlmClientError:
+    """LlamaCppクライアントの異常系テスト"""
 
     @pytest.fixture
     def respx_mock(self):
@@ -109,11 +109,11 @@ class TestOllamaLlmClientError:
         with respx.mock:
             yield respx
 
-    @patch("lakda.llm.providers.ollama.Ollama")
-    def test_connection_error(self, mock_ollama_class: MagicMock) -> None:
+    @patch("lakda.llm.providers.llamacpp.OpenAILike")
+    def test_connection_error(self, mock_openai_like_class: MagicMock) -> None:
         """case5: 接続エラー（サーバー未起動）"""
         mock_llm = MagicMock()
-        mock_ollama_class.return_value = mock_llm
+        mock_openai_like_class.return_value = mock_llm
         mock_structured_llm = MagicMock()
         mock_llm.as_structured_llm.return_value = mock_structured_llm
 
@@ -124,18 +124,18 @@ class TestOllamaLlmClientError:
         error.__class__.__name__ = "ConnectionError"
         mock_structured_llm.complete.side_effect = error
 
-        client = OllamaLlmClient(base_url="http://localhost:11434")
+        client = LlamaCppLlmClient(base_url="http://localhost:11406")
 
         with pytest.raises(LlmConnectionError) as exc_info:
             client.generate_response(prompt="Hello", response_model=SampleResponse)
 
         assert "Connection refused" in str(exc_info.value)
 
-    @patch("lakda.llm.providers.ollama.Ollama")
-    def test_timeout_error(self, mock_ollama_class: MagicMock) -> None:
+    @patch("lakda.llm.providers.llamacpp.OpenAILike")
+    def test_timeout_error(self, mock_openai_like_class: MagicMock) -> None:
         """case6: タイムアウトエラー"""
         mock_llm = MagicMock()
-        mock_ollama_class.return_value = mock_llm
+        mock_openai_like_class.return_value = mock_llm
         mock_structured_llm = MagicMock()
         mock_llm.as_structured_llm.return_value = mock_structured_llm
 
@@ -146,19 +146,19 @@ class TestOllamaLlmClientError:
         error.__class__.__name__ = "TimeoutError"
         mock_structured_llm.complete.side_effect = error
 
-        client = OllamaLlmClient(base_url="http://localhost:11434")
+        client = LlamaCppLlmClient(base_url="http://localhost:11406")
 
         with pytest.raises(LlmTimeoutError):
             client.generate_response(prompt="Hello", response_model=SampleResponse)
 
     def test_health_check_failure(self, respx_mock) -> None:
         """case8: ヘルスチェック失敗"""
-        respx_mock.get("http://localhost:11434/api/tags").mock(
+        respx_mock.get("http://localhost:11406/health").mock(
             side_effect=httpx.ConnectError("Connection refused")
         )
 
-        with patch("lakda.llm.providers.ollama.Ollama"):
-            client = OllamaLlmClient(base_url="http://localhost:11434")
+        with patch("lakda.llm.providers.llamacpp.OpenAILike"):
+            client = LlamaCppLlmClient(base_url="http://localhost:11406")
 
         assert client.health_check() is False
 

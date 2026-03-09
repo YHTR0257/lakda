@@ -12,7 +12,7 @@ from lakda.llm.client import LlmClientManager
 from lakda.llm.exceptions import LlmConnectionError
 from lakda.llm.providers.anthropic import AnthropicLlmClient
 from lakda.llm.providers.google_genai import GoogleGenAILlmClient
-from lakda.llm.providers.ollama import OllamaLlmClient
+from lakda.llm.providers.llamacpp import LlamaCppLlmClient
 from lakda.llm.providers.openrouter import OpenRouterLlmClient
 
 
@@ -61,8 +61,8 @@ class TestAnthropicLlmClient:
         assert client.health_check() is True
 
 
-class TestOllamaLlmClient:
-    """Ollamaクライアントの正常系テスト"""
+class TestLlamaCppLlmClient:
+    """LlamaCppクライアントの正常系テスト"""
 
     @pytest.fixture
     def respx_mock(self):
@@ -72,37 +72,37 @@ class TestOllamaLlmClient:
         with respx.mock:
             yield respx
 
-    @patch("lakda.llm.providers.ollama.Ollama")
-    def test_generate_response_success(self, mock_ollama_class: MagicMock) -> None:
-        """case2: Ollamaからの応答取得"""
+    @patch("lakda.llm.providers.llamacpp.OpenAILike")
+    def test_generate_response_success(self, mock_openai_like_class: MagicMock) -> None:
+        """case2: llama.cpp LLMからの応答取得"""
         # Arrange
         mock_llm = MagicMock()
-        mock_ollama_class.return_value = mock_llm
+        mock_openai_like_class.return_value = mock_llm
         mock_structured_llm = MagicMock()
         mock_llm.as_structured_llm.return_value = mock_structured_llm
         mock_response = MagicMock()
-        mock_response.raw = SampleResponse(answer="Hello from Ollama!", confidence=0.88)
+        mock_response.raw = SampleResponse(answer="Hello from LlamaCpp!", confidence=0.88)
         mock_structured_llm.complete.return_value = mock_response
 
-        client = OllamaLlmClient(base_url="http://localhost:11434", model="llama3.2")
+        client = LlamaCppLlmClient(base_url="http://localhost:11406", model="hf.co/unsloth/Qwen3.5-9B-GGUF:IQ4_NL")
 
         # Act
         result = client.generate_response(prompt="Say hello", response_model=SampleResponse)
 
         # Assert
-        assert result.answer == "Hello from Ollama!"
+        assert result.answer == "Hello from LlamaCpp!"
         assert result.confidence == 0.88
 
     def test_health_check_success(self, respx_mock) -> None:
-        """Ollamaのヘルスチェック成功"""
+        """llama.cpp LLMサーバーのヘルスチェック成功"""
         import httpx
 
-        respx_mock.get("http://localhost:11434/api/tags").mock(
-            return_value=httpx.Response(200, json={"models": []})
+        respx_mock.get("http://localhost:11406/health").mock(
+            return_value=httpx.Response(200, json={"status": "ok"})
         )
 
-        with patch("lakda.llm.providers.ollama.Ollama"):
-            client = OllamaLlmClient(base_url="http://localhost:11434")
+        with patch("lakda.llm.providers.llamacpp.OpenAILike"):
+            client = LlamaCppLlmClient(base_url="http://localhost:11406")
 
         assert client.health_check() is True
 
@@ -212,20 +212,20 @@ class TestLlmClientManager:
         manager = LlmClientManager()
         mock_client = self._make_mock_llm_client("llama3.1:8b")
 
-        manager.register(provider="ollama", model="llama3.1:8b", client=mock_client)
+        manager.register(provider="llamacpp", model="llama3.1:8b", client=mock_client)
 
         assert manager.get_llm() is mock_client.llm
-        assert manager.current_provider == "ollama:llama3.1:8b"
+        assert manager.current_provider == "llamacpp:llama3.1:8b"
 
     def test_register_embedding_and_get_embed_model(self) -> None:
         """embeddingの登録と取得"""
         manager = LlmClientManager()
         mock_embed = self._make_mock_embed_client("bge-m3")
 
-        manager.register_embedding(provider="ollama", model_name="bge-m3", client=mock_embed)
+        manager.register_embedding(provider="llamacpp", model_name="bge-m3", client=mock_embed)
 
         assert manager.get_embed_model() is mock_embed.embed_model
-        assert manager.current_embedding == "ollama:bge-m3"
+        assert manager.current_embedding == "llamacpp:bge-m3"
 
     def test_select_chat_llm(self) -> None:
         """selectでチャットLLMを切り替え"""
@@ -233,13 +233,13 @@ class TestLlmClientManager:
         client1 = self._make_mock_llm_client("model-a")
         client2 = self._make_mock_llm_client("model-b")
 
-        manager.register(provider="ollama", model="model-a", client=client1)
-        manager.register(provider="ollama", model="model-b", client=client2)
+        manager.register(provider="llamacpp", model="model-a", client=client1)
+        manager.register(provider="llamacpp", model="model-b", client=client2)
 
-        assert manager.current_provider == "ollama:model-a"
+        assert manager.current_provider == "llamacpp:model-a"
 
-        manager.select(provider="ollama", model="model-b")
-        assert manager.current_provider == "ollama:model-b"
+        manager.select(provider="llamacpp", model="model-b")
+        assert manager.current_provider == "llamacpp:model-b"
         assert manager.get_llm() is client2.llm
 
     def test_select_embedding(self) -> None:
@@ -248,11 +248,11 @@ class TestLlmClientManager:
         embed1 = self._make_mock_embed_client("embed-a")
         embed2 = self._make_mock_embed_client("embed-b")
 
-        manager.register_embedding(provider="ollama", model_name="embed-a", client=embed1)
-        manager.register_embedding(provider="ollama", model_name="embed-b", client=embed2)
+        manager.register_embedding(provider="llamacpp", model_name="embed-a", client=embed1)
+        manager.register_embedding(provider="llamacpp", model_name="embed-b", client=embed2)
 
-        manager.select(provider="ollama", model="embed-b")
-        assert manager.current_embedding == "ollama:embed-b"
+        manager.select(provider="llamacpp", model="embed-b")
+        assert manager.current_embedding == "llamacpp:embed-b"
         assert manager.get_embed_model() is embed2.embed_model
 
     def test_select_auto_detects_type(self) -> None:
@@ -261,16 +261,16 @@ class TestLlmClientManager:
         chat = self._make_mock_llm_client("llama3.1:8b")
         embed = self._make_mock_embed_client("bge-m3")
 
-        manager.register(provider="ollama", model="llama3.1:8b", client=chat)
-        manager.register_embedding(provider="ollama", model_name="bge-m3", client=embed)
+        manager.register(provider="llamacpp", model="llama3.1:8b", client=chat)
+        manager.register_embedding(provider="llamacpp", model_name="bge-m3", client=embed)
 
         # チャットLLMを選択
-        manager.select(provider="ollama", model="llama3.1:8b")
-        assert manager.current_provider == "ollama:llama3.1:8b"
+        manager.select(provider="llamacpp", model="llama3.1:8b")
+        assert manager.current_provider == "llamacpp:llama3.1:8b"
 
         # embeddingを選択
-        manager.select(provider="ollama", model="bge-m3")
-        assert manager.current_embedding == "ollama:bge-m3"
+        manager.select(provider="llamacpp", model="bge-m3")
+        assert manager.current_embedding == "llamacpp:bge-m3"
 
         # 両方が同時に取得可能
         assert manager.get_llm() is chat.llm
@@ -281,7 +281,7 @@ class TestLlmClientManager:
         manager = LlmClientManager()
 
         with pytest.raises(ValueError, match="登録されていません"):
-            manager.select(provider="ollama", model="nonexistent")
+            manager.select(provider="llamacpp", model="nonexistent")
 
     def test_get_embed_model_without_registration_raises_error(self) -> None:
         """embedding未登録でget_embed_modelするとLlmConnectionError"""
@@ -296,19 +296,19 @@ class TestLlmClientManager:
         chat = self._make_mock_llm_client("llama3.1:8b")
         embed = self._make_mock_embed_client("bge-m3")
 
-        manager.register(provider="ollama", model="llama3.1:8b", client=chat)
-        manager.register_embedding(provider="ollama", model_name="bge-m3", client=embed)
+        manager.register(provider="llamacpp", model="llama3.1:8b", client=chat)
+        manager.register_embedding(provider="llamacpp", model_name="bge-m3", client=embed)
 
         providers = manager.list_providers()
 
         assert len(providers) == 2
 
         llm_entry = next(p for p in providers if p["type"] == "llm")
-        assert llm_entry["key"] == "ollama:llama3.1:8b"
+        assert llm_entry["key"] == "llamacpp:llama3.1:8b"
         assert llm_entry["is_current"] is True
 
         embed_entry = next(p for p in providers if p["type"] == "embedding")
-        assert embed_entry["key"] == "ollama:bge-m3"
+        assert embed_entry["key"] == "llamacpp:bge-m3"
         assert embed_entry["is_current"] is True
 
     def test_health_check_with_provider_and_model(self) -> None:
@@ -317,12 +317,12 @@ class TestLlmClientManager:
         chat = self._make_mock_llm_client("llama3.1:8b")
         embed = self._make_mock_embed_client("bge-m3")
 
-        manager.register(provider="ollama", model="llama3.1:8b", client=chat)
-        manager.register_embedding(provider="ollama", model_name="bge-m3", client=embed)
+        manager.register(provider="llamacpp", model="llama3.1:8b", client=chat)
+        manager.register_embedding(provider="llamacpp", model_name="bge-m3", client=embed)
 
-        assert manager.health_check(provider="ollama", model="llama3.1:8b") is True
-        assert manager.health_check(provider="ollama", model="bge-m3") is True
-        assert manager.health_check(provider="ollama", model="nonexistent") is False
+        assert manager.health_check(provider="llamacpp", model="llama3.1:8b") is True
+        assert manager.health_check(provider="llamacpp", model="bge-m3") is True
+        assert manager.health_check(provider="llamacpp", model="nonexistent") is False
 
     def test_first_registered_is_default(self) -> None:
         """最初に登録されたクライアントがデフォルトになる"""
@@ -330,8 +330,8 @@ class TestLlmClientManager:
         chat = self._make_mock_llm_client("model-a")
         embed = self._make_mock_embed_client("embed-a")
 
-        manager.register(provider="ollama", model="model-a", client=chat)
-        manager.register_embedding(provider="ollama", model_name="embed-a", client=embed)
+        manager.register(provider="llamacpp", model="model-a", client=chat)
+        manager.register_embedding(provider="llamacpp", model_name="embed-a", client=embed)
 
-        assert manager.current_provider == "ollama:model-a"
-        assert manager.current_embedding == "ollama:embed-a"
+        assert manager.current_provider == "llamacpp:model-a"
+        assert manager.current_embedding == "llamacpp:embed-a"
