@@ -15,7 +15,8 @@ class LlmProvider(str, Enum):
     """サポートされているLLMプロバイダー"""
 
     ANTHROPIC = "anthropic"
-    OLLAMA = "ollama"
+    LLAMACPP = "llamacpp"
+    VLLM = "vllm"
     GOOGLE_GENAI = "google_genai"
     OPENROUTER = "openrouter"
 
@@ -48,10 +49,10 @@ class LlmClientFactory:
 
             return AnthropicLlmClient(**kwargs)
 
-        elif provider == LlmProvider.OLLAMA:
-            from lakda.llm.providers.ollama import OllamaLlmClient
+        elif provider in (LlmProvider.LLAMACPP, LlmProvider.VLLM):
+            from lakda.llm.providers.llamacpp import LlamaCppLlmClient
 
-            return OllamaLlmClient(**kwargs)
+            return LlamaCppLlmClient(**kwargs)
 
         elif provider == LlmProvider.GOOGLE_GENAI:
             from lakda.llm.providers.google_genai import GoogleGenAILlmClient
@@ -83,10 +84,10 @@ class LlmClientFactory:
         if isinstance(provider, str):
             provider = LlmProvider(provider.lower())
 
-        if provider == LlmProvider.OLLAMA:
-            from lakda.llm.providers.ollama import OllamaEmbeddingClient
+        if provider in (LlmProvider.LLAMACPP, LlmProvider.VLLM):
+            from lakda.llm.providers.llamacpp import LlamaCppEmbeddingClient
 
-            return OllamaEmbeddingClient(**kwargs)
+            return LlamaCppEmbeddingClient(**kwargs)
 
         else:
             raise ValueError(f"埋め込みモデルがサポートされていないプロバイダー: {provider}")
