@@ -6,6 +6,8 @@ from collections.abc import Generator
 import pytest
 from neo4j import Driver, GraphDatabase
 
+from lakda.db import Neo4jGraphStoreManager
+
 
 @pytest.fixture(scope="module")
 def neo4j_driver() -> Generator[Driver]:
@@ -44,3 +46,26 @@ class TestNeo4jConnection:
         info = neo4j_driver.get_server_info()
         assert info is not None
         assert info.agent is not None
+
+
+@pytest.mark.db
+class TestNeo4jGraphStoreManager:
+    """Neo4jGraphStoreManager 接続確認テスト"""
+
+    def test_health_check(self):
+        """health_check が True を返すこと"""
+        manager = Neo4jGraphStoreManager()
+        assert manager.health_check() is True
+
+    def test_store_property(self):
+        """store プロパティが Neo4jPropertyGraphStore を返すこと"""
+        from llama_index.graph_stores.neo4j import Neo4jPropertyGraphStore
+
+        manager = Neo4jGraphStoreManager()
+        store = manager.store
+        assert isinstance(store, Neo4jPropertyGraphStore)
+
+    def test_store_is_cached(self):
+        """store プロパティが同一インスタンスを返すこと（遅延初期化キャッシュ）"""
+        manager = Neo4jGraphStoreManager()
+        assert manager.store is manager.store
