@@ -75,6 +75,10 @@ addopts = [
     "--strict-markers",
     "-v",
 ]
+filterwarnings = [
+    # llama-index-graph-stores-neo4j が内部で Pydantic v1 の .dict() を使用しているため抑制
+    "ignore::pydantic.warnings.PydanticDeprecatedSince20:llama_index.*",
+]
 
 [tool.black]
 line-length = 100
