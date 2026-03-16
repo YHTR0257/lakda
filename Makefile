@@ -1,5 +1,9 @@
 BACKEND_DIR := backend
 BACKEND_SVC := backend
+FRONTEND_SVC := frontend
+
+# SVC: backend (default) | frontend
+SVC ?= $(BACKEND_SVC)
 
 # ENV: dev (default) | prod
 ENV ?= dev
@@ -43,6 +47,10 @@ logs: _check-env
 ps: _check-env
 	$(COMPOSE) ps
 
+.PHONY: exec
+exec: _check-env
+	$(COMPOSE) exec $(SVC) /bin/bash
+
 # =============================================================================
 # 通常テスト（ローカル実行・モックのみ・実API呼び出しなし）
 # =============================================================================
@@ -85,6 +93,23 @@ test-llm-api: _check-env
 	$(COMPOSE) exec $(BACKEND_SVC) uv run pytest $$target --run-llm-api -v
 
 # =============================================================================
+# DB統合テスト（Docker コンテナ内で実行）
+#
+# 使い方:
+#   make test-db                         # Neo4j 接続テストを実行
+#
+# 前提: make up でコンテナが起動していること
+# =============================================================================
+
+.PHONY: test-db
+test-db: _check-env
+	$(COMPOSE) exec $(BACKEND_SVC) uv run pytest tests/utils/test_connect_db.py --run-db -v
+
+.PHONY: test-index
+test-index: _check-env
+	$(COMPOSE) exec $(BACKEND_SVC) uv run pytest tests/services/index/ --run-db --run-llm-api -v
+
+# =============================================================================
 # ヘルプ
 # =============================================================================
 
@@ -99,6 +124,8 @@ help:
 	@echo "    make down ENV=prod                  本番環境を停止"
 	@echo "    make logs                           ログをフォロー"
 	@echo "    make ps                             コンテナ一覧を表示"
+	@echo "    make exec                           backendコンテナ内にシェルで入る"
+	@echo "    make exec SVC=frontend              frontendコンテナ内にシェルで入る"
 	@echo ""
 	@echo "  通常テスト（ローカル・モックのみ）"
 	@echo "    make test                           全ユニットテストを実行"
@@ -109,6 +136,11 @@ help:
 	@echo "    make test-llm-api PROVIDER=google   Google GenAI テストのみ"
 	@echo "    make test-llm-api SUITE=connect     接続確認テストのみ"
 	@echo ""
+	@echo "  DB統合テスト（要: make up）"
+	@echo "    make test-db                        Neo4j 接続テストを実行"
+	@echo "    make test-index                     インデックスサービス統合テストを実行"
+	@echo ""
 	@echo "  前提条件（実APIテスト）:"
 	@echo "    llama.cpp       ホスト上で起動（host.docker.internal:11406/11407）"
 	@echo "    GOOGLE_API_KEY  .env に設定"
+	@echo "    Neo4j           make up で起動（lakda-database コンテナ）"
