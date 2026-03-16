@@ -24,9 +24,15 @@ class ConfirmRequest(BaseModel):
     confirmed_question: str = Field(..., description="The question text that has been confirmed")
     options: AskOptions
 
+class SourceItem(BaseModel):
+    file: str = Field(..., description="Source document identifier")
+    snippet: str = Field(..., description="Relevant text excerpt from the source")
+    score: float = Field(..., description="Relevance score")
+    line: Optional[int] = Field(None, description="Line number in source document")
+
 class AnswerResponse(BaseModel):
     session_id: str = Field(..., description="Session identifier for tracking")
     question: str = Field(..., description="The question text to be answered")
     answer: str = Field(..., description="The answer text provided")
-    sources: List[str] = Field(..., description="List of source document identifiers")
+    sources: List[SourceItem] = Field(..., description="List of source documents with context")
     timestamp: Optional[str] = Field(None, description="Timestamp of the answer request")
