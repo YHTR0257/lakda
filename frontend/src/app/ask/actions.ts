@@ -1,34 +1,47 @@
-"use client";
+"use server";
 
-import { redirect } from "next/navigation";
 import * as api from "@/lib/api";
 import { ApiException } from "@/lib/api";
+import { marked } from "marked";
 
-export async function submitQuestion(formData: FormData) {
+export async function confirmQuestion(
+  _prevState: unknown,
+  formData: FormData
+): Promise<unknown> {
   try {
     const question = formData.get("question") as string;
 
-    if (!question || question.trim().length === 0) {
-      return { success: false, error: "質問を入力してください。" };
+    if (!question || question.trim().length < 10) {
+      return {
+        success: false,
+        answer: null,
+        error: "質問は10文字以上で入力してください。",
+      };
     }
 
-    const result = await api.submitQuestion(question);
+    const sessionId = crypto.randomUUID();
+    const result = await api.confirmAsk(question.trim(), sessionId);
 
-    redirect(`/ask/interpret?id=${result.interpretationId}`);
+    return {
+      success: true,
+      answer: result,
+      error: "",
+    };
   } catch (error) {
-    console.error("Error submitting question:", error);
+    console.error("Error confirming question:", error);
 
     if (error instanceof ApiException) {
       return {
         success: false,
+        answer: null,
         error: error.error,
         code: error.code,
-        details: error.details,
       };
     }
 
     return {
       success: false,
+      answer: null,
       error: "質問の送信中に予期しないエラーが発生しました。",
     };
   }

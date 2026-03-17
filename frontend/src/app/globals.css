@@ -15,3 +15,11 @@
     @apply rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-600;
   }
 }
+
+@keyframes camel-walk {
+  0%   { transform: translateX(-2rem) scaleX(1); }
+  49% { transform: translateX(calc(100% + 2rem)) scaleX(1); }
+  50% { transform: translateX(calc(100% + 2rem)) scaleX(-1); }
+  99% { transform: translateX(-2rem) scaleX(-1); }
+  100% { transform: translateX(-2rem) scaleX(1); }
+}
