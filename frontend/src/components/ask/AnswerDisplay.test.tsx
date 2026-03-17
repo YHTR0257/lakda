@@ -23,12 +23,12 @@ const mockAnswer: ConfirmResponse = {
 
 describe("AnswerDisplay", () => {
   it("質問テキストを表示すること", () => {
-    render(<AnswerDisplay answer={mockAnswer} />);
+    render(<AnswerDisplay answer={mockAnswer} answerHtml={null} />);
     expect(screen.getByText("AttributeError の原因は？")).toBeInTheDocument();
   });
 
-  it("回答テキストを表示すること", () => {
-    render(<AnswerDisplay answer={mockAnswer} />);
+  it("answerHtml が null のとき回答テキストをプレーンテキストで表示すること", () => {
+    render(<AnswerDisplay answer={mockAnswer} answerHtml={null} />);
     expect(
       screen.getByText(
         "AttributeError はオブジェクトに存在しない属性にアクセスしたときに発生します。"
@@ -36,27 +36,37 @@ describe("AnswerDisplay", () => {
     ).toBeInTheDocument();
   });
 
+  it("answerHtml が渡されたとき HTML としてレンダリングすること", () => {
+    render(
+      <AnswerDisplay
+        answer={mockAnswer}
+        answerHtml="<p>HTMLレンダリングされた回答</p>"
+      />
+    );
+    expect(screen.getByText("HTMLレンダリングされた回答")).toBeInTheDocument();
+  });
+
   it("ソース一覧を表示すること", () => {
-    render(<AnswerDisplay answer={mockAnswer} />);
+    render(<AnswerDisplay answer={mockAnswer} answerHtml={null} />);
     expect(screen.getByText("doc-python-errors.md")).toBeInTheDocument();
     expect(screen.getByText("doc-debugging.md")).toBeInTheDocument();
     expect(screen.getByText("AttributeError の詳細説明...")).toBeInTheDocument();
   });
 
   it("ソースのスコアをパーセンテージで表示すること", () => {
-    render(<AnswerDisplay answer={mockAnswer} />);
+    render(<AnswerDisplay answer={mockAnswer} answerHtml={null} />);
     expect(screen.getByText("スコア: 95.0%")).toBeInTheDocument();
     expect(screen.getByText("スコア: 82.0%")).toBeInTheDocument();
   });
 
   it("ソースが0件のとき参照ソースセクションを表示しないこと", () => {
     const answerNoSources: ConfirmResponse = { ...mockAnswer, sources: [] };
-    render(<AnswerDisplay answer={answerNoSources} />);
+    render(<AnswerDisplay answer={answerNoSources} answerHtml={null} />);
     expect(screen.queryByText(/参照ソース/)).not.toBeInTheDocument();
   });
 
   it("参照ソース件数を表示すること", () => {
-    render(<AnswerDisplay answer={mockAnswer} />);
+    render(<AnswerDisplay answer={mockAnswer} answerHtml={null} />);
     expect(screen.getByText("参照ソース (2件)")).toBeInTheDocument();
   });
 });

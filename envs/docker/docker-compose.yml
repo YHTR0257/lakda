@@ -74,6 +74,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000/}
       - NEXT_PUBLIC_LOG_LEVEL=${NEXT_PUBLIC_LOG_LEVEL:-info}
+      - BACKEND_URL=${BACKEND_URL:-http://backend:8000}
       - npm_config_cache=/tmp/.npm
     env_file:
       - ../../.env

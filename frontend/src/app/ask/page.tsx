@@ -71,7 +71,7 @@ export default function AskPage() {
       </form>
 
       {/* 回答表示 */}
-      {state.answer && <AnswerDisplay answer={state.answer} />}
+      {state.answer && <AnswerDisplay answer={state.answer} answerHtml={state.answerHtml} />}
     </div>
   );
 }

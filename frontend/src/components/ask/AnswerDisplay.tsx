@@ -13,7 +13,11 @@ export default function AnswerDisplay({ answer, answerHtml }: Props) {
         <h2 className="mb-1 text-sm font-medium text-gray-500">質問</h2>
         <p className="mb-4 text-gray-800">{answer.question}</p>
         <h2 className="mb-2 text-sm font-medium text-gray-500">回答</h2>
-        <div className="whitespace-pre-wrap text-gray-900">{answer.answer}</div>
+        {answerHtml ? (
+          <div className="md text-gray-900" dangerouslySetInnerHTML={{ __html: answerHtml }} />
+        ) : (
+          <div className="whitespace-pre-wrap text-gray-900">{answer.answer}</div>
+        )}
       </div>
 
       {/* ソース一覧 */}

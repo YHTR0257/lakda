@@ -17,6 +17,7 @@ describe("useAskForm", () => {
     const { result } = renderHook(() => useAskForm());
     expect(result.current.state.success).toBe(false);
     expect(result.current.state.answer).toBeNull();
+    expect(result.current.state.answerHtml).toBeNull();
     expect(result.current.state.error).toBe("");
   });
 
