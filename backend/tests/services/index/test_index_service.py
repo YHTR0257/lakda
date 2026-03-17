@@ -15,7 +15,7 @@ from llama_index.core import PropertyGraphIndex, Settings
 from lakda.db import Neo4jGraphStoreManager
 from lakda.llm.client import LlmClientManager
 from lakda.services.index.pipeline import IndexPipeline
-from lakda.services.index.service import IndexService
+from lakda.services.index.service import IndexService, _is_xml_prefixed
 from lakda.services.index.store import IndexStore
 
 
@@ -94,6 +94,53 @@ def llm_manager() -> LlmClientManager:
     Settings.llm = manager.get_llm()
     Settings.embed_model = manager.get_embed_model()
     return manager
+
+
+# ---------------------------------------------------------------------------
+# _is_xml_prefixed テスト（外部依存なし）
+# ---------------------------------------------------------------------------
+
+
+class TestIsXmlPrefixed:
+    def test_xml_tag_at_start(self):
+        assert _is_xml_prefixed("<document>本文</document>") is True
+
+    def test_xml_tag_with_leading_whitespace(self):
+        assert _is_xml_prefixed("  <root>...</root>") is True
+
+    def test_xml_tag_with_newline(self):
+        assert _is_xml_prefixed("\n<article>...</article>") is True
+
+    def test_markdown_heading(self):
+        assert _is_xml_prefixed("# タイトル\n本文") is False
+
+    def test_plain_text(self):
+        assert _is_xml_prefixed("普通のテキスト") is False
+
+    def test_closing_tag_is_not_prefix(self):
+        assert _is_xml_prefixed("</document>") is False
+
+    def test_empty_string(self):
+        assert _is_xml_prefixed("") is False
+
+
+class TestIndexServiceRouting:
+    """IndexService のルーティングロジックのテスト（外部依存なし）"""
+
+    def test_xml_prefixed_raises_not_implemented(self):
+        from unittest.mock import MagicMock
+        manager = MagicMock()
+        service = IndexService(manager)
+        with pytest.raises(NotImplementedError):
+            service.index("<document>本文</document>", doc_id="doc-xml")
+
+    def test_markdown_routes_to_pipeline(self):
+        from unittest.mock import MagicMock, patch
+        manager = MagicMock()
+        service = IndexService(manager)
+        with patch.object(service, "_index_markdown", return_value=MagicMock()) as mock:
+            service.index("# Markdown テキスト", doc_id="doc-md")
+            mock.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
