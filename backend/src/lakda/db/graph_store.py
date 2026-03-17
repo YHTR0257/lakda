@@ -50,6 +50,26 @@ class Neo4jGraphStoreManager:
             )
         return self._store
 
+    def query(self, cypher: str, params: dict | None = None) -> list[dict]:
+        """Cypher クエリを実行して結果を返す
+
+        Args:
+            cypher: 実行する Cypher クエリ
+            params: クエリパラメータ
+
+        Returns:
+            レコードのリスト（各レコードは dict）
+        """
+        from neo4j import GraphDatabase
+
+        driver = GraphDatabase.driver(self.url, auth=(self.username, self.password))
+        try:
+            with driver.session() as session:
+                result = session.run(cypher, params or {})
+                return [record.data() for record in result]
+        finally:
+            driver.close()
+
     def health_check(self) -> bool:
         """Neo4j サーバーへの接続を確認する
 

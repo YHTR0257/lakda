@@ -241,6 +241,22 @@ class LlmClientManager:
         client = self.get_current_client()
         return client.generate_response(prompt, response_model)
 
+    def health_check_embedding(self) -> bool:
+        """現在選択されている embedding クライアントのヘルスチェックを実行する
+
+        Returns:
+            接続が正常な場合はTrue、登録なし・エラーの場合はFalse
+        """
+        if self._current_embedding_key is None:
+            return False
+        embed_client = self._embedding_clients.get(self._current_embedding_key)
+        if embed_client is None:
+            return False
+        health_fn = getattr(embed_client, "health_check", None)
+        if health_fn is not None:
+            return health_fn()
+        return True
+
     def health_check(self, provider: LlmProvider | str | None = None, model: str | None = None) -> bool:
         """指定されたキー（またはカレント）のヘルスチェックを実行する
 
