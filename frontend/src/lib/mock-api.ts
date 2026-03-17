@@ -1,5 +1,6 @@
 import { ApiException } from "@/lib/api";
-import type { Interpretation, Answer } from "@/types/ask";
+import type { Interpretation, Answer, ConfirmResponse } from "@/types/ask";
+import type { IndexResponse, LlmHealthResponse } from "@/types/index";
 
 const mockInterpretations: Record<string, Interpretation> = {};
 const mockAnswers: Record<string, Answer> = {};
@@ -138,4 +139,48 @@ export async function mockGetAnswer(id: string) {
   }
 
   return { success: true, answer };
+}
+
+export async function mockConfirmAsk(
+  question: string,
+  sessionId: string
+): Promise<ConfirmResponse> {
+  await delay(1500);
+
+  return {
+    session_id: sessionId,
+    question,
+    answer: `# 回答\n\n${question} に関する回答です。\n\nデータベースから以下の情報が見つかりました：\n\n1. 関連事例AAの説明テキスト\n2. 関連事例BBの詳細情報\n\n以上が検索結果に基づく回答です。`,
+    sources: [
+      {
+        file: "doc-001",
+        snippet: "関連するドキュメントの抜粋テキストです。詳細な情報が含まれています。",
+        score: 0.95,
+      },
+      {
+        file: "doc-002",
+        snippet: "別のドキュメントからの関連情報の抜粋です。",
+        score: 0.82,
+      },
+    ],
+    timestamp: new Date().toISOString(),
+  };
+}
+
+export async function mockCheckIndexHealth(): Promise<LlmHealthResponse> {
+  await delay(500);
+  return { llm: true, embedding: true, ok: true };
+}
+
+export async function mockIndexMarkdown(
+  markdown_text: string,
+  doc_id?: string
+): Promise<IndexResponse> {
+  await delay(1000);
+
+  return {
+    doc_id: doc_id ?? null,
+    status: "success",
+    timestamp: new Date().toISOString(),
+  };
 }
