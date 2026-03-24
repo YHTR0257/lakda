@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import { submitQuestion } from "@/app/ask/actions";
 import SubmitButton from "./SubmitButton";
 import { useEffect, useRef } from "react";
@@ -12,7 +12,7 @@ const initialState = {
 };
 
 export default function QuestionForm() {
-  const [state, formAction] = useFormState(submitQuestion, initialState);
+  const [state, formAction] = useActionState(submitQuestion, initialState);
   const formRef = useRef<HTMLFormElement>(null);
 
   // 送信成功後にフォームをリセット（リダイレクト前）

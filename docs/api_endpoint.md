@@ -9,13 +9,13 @@ http://localhost:8000/api
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST   | /ask/interpret | 質問の解釈と確認（FT06） |
-| POST   | /ask/answer | 確認済み質問に対する回答生成（FT08+FT09） |
-| POST   | /documents/upload | ドキュメントのアップロードと処理開始 |
-| GET    | /documents/{document_id}/status | ドキュメント処理ステータスの取得 |
-| GET    | /documents | ドキュメント一覧の取得（ドメイン別） |
-| POST   | /feedback | ユーザーフィードバックの記録 |
-| GET    | /health | システムヘルスチェック |
+| POST   | `/api/ask/interpret` | 質問の解釈と確認（FT06） |
+| POST   | `/api/ask/confirm` | 確認済み質問に対する回答生成（FT08+FT09） |
+| POST   | `/api/documents/upload` | ドキュメントのアップロードと処理開始 |
+| GET    | `/api/documents/{document_id}/status` | ドキュメント処理ステータスの取得 |
+| GET    | `/api/documents?domain={domain}` | ドキュメント一覧の取得（ドメイン別） |
+| POST   | `/api/feedback` | ユーザーフィードバックの記録 |
+| GET    | `/api/health` | システムヘルスチェック |
 
 ---
 
@@ -23,7 +23,7 @@ http://localhost:8000/api
 
 質問応答は2ステップで行います：
 1. **質問解釈** (`/ask/interpret`): ユーザーの曖昧な質問を解釈し、確認を求める
-2. **回答生成** (`/ask/answer`): 確認済みの質問に対して回答を生成する
+2. **回答生成** (`/ask/confirm`): 確認済みの質問に対して回答を生成する
 
 このフローにより、ユーザーは解釈された質問を確認・修正してから回答を取得できます（FT06/FT07対応）。
 
@@ -65,7 +65,7 @@ http://localhost:8000/api
 
 ### Step 2: 回答生成
 
-#### `POST /ask/answer`
+#### `POST /ask/confirm`
 
 確認済みの質問に対して、ドキュメント検索と回答生成を実行します。
 

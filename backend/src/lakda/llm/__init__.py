@@ -1,6 +1,6 @@
 """LLMクライアントモジュール"""
 
-from lakda.llm.base import BaseLlmClient
+from lakda.llm.base import LlamaIndexLlmClient
 from lakda.llm.client import LlmClientFactory, LlmClientManager, LlmProvider
 from lakda.llm.exceptions import (
     LlmAuthenticationError,
@@ -13,7 +13,7 @@ from lakda.llm.exceptions import (
 
 __all__ = [
     # 基底クラス
-    "BaseLlmClient",
+    "LlamaIndexLlmClient",
     # ファクトリー・マネージャー
     "LlmClientFactory",
     "LlmClientManager",

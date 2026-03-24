@@ -4,91 +4,70 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**LAKDA (LLM-Assisted Knowledge Discovery Application)** - A domain-agnostic RAG system that searches local/cloud documents to answer domain-specific questions with context and citations. Initially designed for error handling support, but applicable to architecture design, business logic, and technical documentation domains.
+**LAKDA (LLM-Assisted Knowledge Discovery Application)** - A domain-agnostic RAG system that searches local/cloud documents to answer domain-specific questions with context and citations. Uses LlamaIndex for RAG pipeline and Neo4j as PropertyGraphStore (knowledge graph).
 
 ## Development Commands
 
 ### Environment Setup
 ```bash
 # Python version: 3.12 (managed by uv via .python-version)
-uv sync                  # Install dependencies from pyproject.toml
+cd backend && uv sync    # Install dependencies from pyproject.toml
 ```
 
 ### Running the Application
 ```bash
-# Phase 2: CLI-based question-answering (not yet implemented)
-python -m lakda.main       # Entry point for question input/output
+cd backend && uv run uvicorn lakda.main:app --reload
 ```
 
 ### Testing
 ```bash
-# バックエンドユニットテスト（uv使用）
+# ユニットテスト（モック使用）
+cd backend && uv run pytest tests/ -m "not llm_api and not db"
+
+# LLM実APIテスト（llama.cpp サーバー必要）
+make test-llm-api PROVIDER=llamacpp
+
+# DBテスト（Neo4j サーバー必要）
+cd backend && uv run pytest tests/ -m db
+
+# 全テスト
 cd backend && uv run pytest tests/
-
-# フロントエンドユニットテスト
-cd frontend && npm test
-
-# 統合テスト
-uv run pytest tests/integration/
-
-# E2Eテスト
-uv run pytest tests/e2e/
 ```
 
 ## Architecture Overview
 
-### Phased Development Approach
-
-**Phase 1 (2025-12-29 - 2026-01-02)**: Design phase - Define system concept, select MCP servers (MCP-Markdown-RAG chosen for hybrid search)
-
-**Phase 2 (2026-01-02 - 2026-02-02)**: Validation & Implementation - Simple sequential architecture
-- **Week 1**: Setup MCP-Markdown-RAG via symbolic link, evaluate hybrid search (BM25 + Semantic)
-- **Week 2-3**: Integrate MarkItDown library directly (no markdownify-mcp), implement CLI question-answering
-- **Week 4**: Implement feedback recording, Phase 3 decision
-- **Phase 2 evaluation criteria**: Symbolic link approach viability, domain search accuracy (>80%), configuration flexibility
-
-**Phase 3 (2026-02-02 - 2026-03-31)**: Extension phase (conditional implementation based on Phase 2 results)
-- Option A: Continue with MCP-Markdown-RAG (if requirements met)
-- Option B: Implement custom MCP server (if specialized features needed)
-- Option C: Fork & customize MCP-Markdown-RAG (if partial extensions needed)
-- Add API integration (Gemini API)
-- Add orchestrator & multi-agent architecture (LangGraph/LangChain)
-
-### Phase 2 Architecture (Current Target)
+### System Architecture
 
 ```
-User Input → main.py → Gemini CLI (with MCP-Markdown-RAG) → Output → Feedback Recording
-                ↓
-         MarkItDown library (direct Python import)
+User Input
+    ↓
+API Layer (FastAPI)
+    ↓
+Service Layer
+    ├── ask/       → 質問応答（LlamaIndex PropertyGraphStore からの検索）
+    ├── index/     → インデキシング（Markdown → Neo4j PropertyGraphStore）
+    └── documents/ → ドキュメント変換（PDF/Word等 → Markdown or jsonL）
+    ↓
+LLM Layer (LlamaIndex)
+    ├── LLM: llama.cpp (OpenAI互換API) / Google GenAI / Anthropic / OpenRouter
+    └── Embedding: llama.cpp (OpenAI互換API)
+    ↓
+Neo4j (PropertyGraphStore)
 ```
 
-**Key Design Decisions**:
-- **main.py** acts as a thin orchestration layer, calling external CLI tools via subprocess
-- **Gemini CLI** handles question interpretation, retrieval (via MCP-Markdown-RAG), and answer generation in one flow
-- **MarkItDown Python library** converts PDF/Word documents to Markdown (imported directly, no MCP server)
-- No direct MCP server calls from Python - all MCP interaction happens through Gemini CLI
-- Domain management is **implicit** via directory structure (no domains.yml needed in Phase 2)
-- **Symbolic link setup**: `~/dev/mcp-servers/MCP-Markdown-RAG/documents` → `data/documents` (works around server.py:59 constraint)
+### Service Responsibilities
 
-### Domain Management Strategy
+| Service | 入力 | 出力 | 責務 |
+|---------|------|------|------|
+| `documents` | PDF / Word / HTML 等 | Markdown or jsonL | フォーマット変換・構造化。MarkItDown等を使用 |
+| `index` | Markdown | Neo4j PropertyGraphStore | LlamaIndex でノード・リレーション抽出し Neo4j に保存 |
+| `ask` | 質問テキスト | 回答 + ソース | PropertyGraphStore を検索し LLM で回答生成 |
 
-**Phase 2: Implicit Domain Management**
-```
-data/raw/
-├── papers/             # 論文ドメイン
-├── notes/              # ノートドメイン
-└── datasets/           # データセットドメイン
-```
-
-- Directory name = Domain name
-- Search scope controlled via MCP-Markdown-RAG config.toml
-- No explicit domain configuration file needed
-- Limitations: No Frontmatter filtering, no dynamic domain weights
-
-**Phase 3: Explicit Domain Management** (only if custom MCP server implemented)
-- domains.yml with per-domain weights, filters, and metadata
-- Frontmatter-based filtering (tags, categories)
-- Dynamic domain addition/deletion
+**index サービスの責務境界**:
+- `documents` から受け取った Markdown のみを対象とする
+- LlamaIndex の `PropertyGraphIndex` を使ってエンティティ・関係を抽出
+- Neo4j の `Neo4jPropertyGraphStore` に永続化
+- PDFの解析・レイアウト補正などは `documents` サービスの責務
 
 ### Module Responsibilities
 
@@ -97,150 +76,88 @@ data/raw/
 ```
 API Layer (api/)
     ↓ リクエスト受付
-Orchestrator Layer (agents/)
-    ↓ リクエスト判定・ツール選択
-    ↓ 適切なLLMモデル選択
+Service Layer (services/)
+    ↓ 実処理
 LLM Layer (llm/)
     ↓ モデル接続・プロンプト管理
-Service Layer (services/)
-    ↓ 実処理（LLM or スクリプト）
-Orchestrator Layer (agents/)
-    ↓ 結果確認
-Response
+Neo4j (db/)
 ```
 
 #### Module Details
 
-| Layer | Module | Role | Phase 2 Behavior |
-|-------|--------|------|------------------|
-| Entry | `lakda/main.py` | Entry point | Orchestrates CLI tools, user I/O |
-| CLI | `lakda/cli/commands.py` | CLI commands | CLI command definitions |
-| API | `lakda/api/ask.py` | Ask endpoint | Ask API endpoint (FT06) |
-| API | `lakda/api/upload.py` | Upload endpoint | Document upload API (FT02) |
-| API | `lakda/api/feedback.py` | Feedback endpoint | Feedback API (FT09) |
-| Orchestrator | `lakda/agents/orchestrator.py` | Base orchestrator | リクエスト判定・ツール選択・結果確認 |
-| Orchestrator | `lakda/agents/ask_agent.py` | Ask orchestrator | 質問処理オーケストレーション |
-| Orchestrator | `lakda/agents/document_agent.py` | Document orchestrator | ドキュメント処理オーケストレーション |
-| Orchestrator | `lakda/agents/feedback_agent.py` | Feedback orchestrator | フィードバック処理オーケストレーション |
-| LLM | `lakda/llm/client.py` | LLM client | モデル接続抽象化 |
-| LLM | `lakda/llm/models.py` | Model management | モデル設定・選択 |
-| LLM | `lakda/llm/prompts/` | Prompt management | プロンプトテンプレート管理 |
-| Service | `lakda/services/ask/service.py` | Ask service | Ask business logic |
-| Service | `lakda/services/ask/retrieval.py` | Document retrieval | Document retrieval logic (FT06) |
-| Service | `lakda/services/ask/generator.py` | Answer generation | Calls LLM via llm/ layer (FT07) |
-| Service | `lakda/services/ask/interpreter.py` | Question interpretation | Question interpretation (FT05) |
-| Service | `lakda/services/documents/converter.py` | Document conversion | markitdown integration (FT03) |
-| Service | `lakda/services/documents/metadata.py` | Metadata generation | LLM-based Frontmatter generation (FT04) |
-| Service | `lakda/services/documents/indexer.py` | Document indexing | Index registration |
-| Service | `lakda/services/feedback/service.py` | Feedback service | Feedback business logic (FT09) |
+| Layer | Module | Role |
+|-------|--------|------|
+| Entry | `src/lakda/main.py` | FastAPI アプリ初期化・ルーター登録 |
+| API | `src/lakda/api/ask.py` | 質問応答エンドポイント |
+| API | `src/lakda/api/documents.py` | ドキュメント変換エンドポイント |
+| API | `src/lakda/api/feedback.py` | フィードバックエンドポイント |
+| API | `src/lakda/api/dependencies.py` | FastAPI 依存性注入 |
+| Service | `src/lakda/services/ask/service.py` | 質問応答ビジネスロジック |
+| Service | `src/lakda/services/ask/retrieval.py` | Neo4j PropertyGraphStore からの検索 |
+| Service | `src/lakda/services/index/service.py` | インデキシング オーケストレーション |
+| Service | `src/lakda/services/index/store.py` | Neo4j PropertyGraphStore への保存 |
+| Service | `src/lakda/services/index/pipeline.py` | LlamaIndex ingestion pipeline |
+| Service | `src/lakda/services/documents/converter.py` | 各種ドキュメント → Markdown/jsonL 変換 |
+| LLM | `src/lakda/llm/client.py` | LlmClientFactory / LlmClientManager |
+| LLM | `src/lakda/llm/base.py` | LlamaIndexLlmClient 基底クラス |
+| LLM | `src/lakda/llm/providers/llamacpp.py` | llama.cpp LLM + Embedding クライアント |
+| LLM | `src/lakda/llm/providers/google_genai.py` | Google GenAI LLM クライアント |
+| LLM | `src/lakda/llm/providers/anthropic.py` | Anthropic LLM クライアント |
+| LLM | `src/lakda/llm/providers/openrouter.py` | OpenRouter LLM クライアント |
+| DB | `src/lakda/db/` | Neo4j 接続管理 |
+| Models | `src/lakda/models/schemas/ask.py` | Pydantic スキーマ (AskRequest, AnswerResponse 等) |
 
 ### Data Storage Structure
 
 ```
 data/
-├── raw/                    # 元ドキュメント
-│   ├── papers/                 # 論文
-│   ├── notes/                  # ノート
-│   └── datasets/               # データセット
-├── processed/              # チャンク化・埋め込み済み
-│   ├── chunks/                 # チャンクデータ
-│   └── metadata/               # メタデータ
-├── feedback/               # フィードバックデータ
-└── logs/                   # アプリケーションログ（オプション）
+├── raw/                    # 元ドキュメント（PDF, Word等）
+│   ├── papers/
+│   ├── notes/
+│   └── datasets/
+└── processed/              # documents サービスの変換済みファイル（Markdown/jsonL）
+    ├── papers/
+    ├── notes/
+    └── datasets/
 ```
 
-### Configuration Files
+Neo4j はインデックスデータの永続化ストアとして使用（`data/` には保存しない）。
 
-| File | Purpose | Phase |
-|------|---------|-------|
-| `config/config.toml` | MCP-Markdown-RAG settings (search weights, paths) | Phase 2 |
-| `config/gemini_config.json` | Gemini CLI configuration | Phase 2 |
-| `config/mcp_config.json` | MCP server settings | Phase 2 |
-| `config/domains.yml` | Explicit domain definitions | Phase 3 only (if custom MCP server) |
+## Technology Stack
 
-## Implementation Guidelines
-
-### Phase 2 Setup
-
-**1. Install dependencies**
-```bash
-uv sync                  # Install Python dependencies
-uv add markitdown        # Add MarkItDown library for document conversion
-```
-
-**2. Setup MCP-Markdown-RAG symbolic link**
-```bash
-cd ~/dev/mcp-servers/MCP-Markdown-RAG
-ln -s ~/dev/github/YHTR0257/lakda/data/documents documents
-```
-
-This works around the `server.py:59` constraint where `target_path = os.path.join(current_working_directory, directory)` assumes documents are in the MCP server's directory.
-
-**3. Configure Gemini CLI with MCP**
-Edit `config/mcp_config.json` to point to MCP-Markdown-RAG server, then test:
-```bash
-gemini chat --mcp config/mcp_config.json -c "Index documents in ./documents directory"
-```
-
-### Adding New Documents
-
-1. Place PDF/Word files in `data/raw/{domain}/`
-2. Run document converter (uses MarkItDown library): `python -m lakda.services.documents.converter`
-3. Generate metadata/Frontmatter via LLM: `python -m lakda.services.documents.metadata`
-4. Processed files are stored in `data/processed/chunks/` and `data/processed/metadata/`
-5. Run indexer: `python -m lakda.services.documents.indexer`
-
-### Configuring Search Behavior
-
-Edit `config/config.toml`:
-```toml
-[documents]
-root_path = "data/documents"
-# Restrict to specific domain:
-# paths = ["data/documents/error-handling"]
-
-[search]
-semantic_weight = 1.0    # Semantic search weight
-keyword_weight = 1.0     # BM25 keyword search weight
-```
-
-### Phase 2 → Phase 3 Transition Criteria
-
-Evaluate at end of Phase 2 (2026-02-02):
-1. **Symbolic link approach**: Is it viable for production use, or does absolute path support become necessary?
-2. **Domain search accuracy**: Is implicit directory-based domain management sufficient? (Target: >80% Top 3 hit rate)
-3. **Configuration flexibility**: Can config.toml settings meet all requirements?
-4. **Missing features**: Are Frontmatter filters, domain weights, or custom scoring needed?
-
-**Decision Tree**:
-- ✅ All criteria met → **Option A**: Continue with MCP-Markdown-RAG
-- ⚠️ Only absolute path needed → **Option C**: Fork MCP-Markdown-RAG, modify server.py:59 (1 line, 1 day)
-- ❌ Custom features required → **Option B**: Implement custom RAG (MarkItDown + sentence-transformers + FAISS, 2-3 weeks)
-
-## Important Constraints & Design Principles
-
-### Phase 2 Constraints
-- **No direct Python MCP client**: All MCP interaction through Gemini CLI or other CLI tools
-- **Sequential processing**: No parallel agent orchestration (LangGraph/LangChain reserved for Phase 3)
-- **Implicit domain management**: No domains.yml - rely on directory structure
-- **Local feedback storage**: Use local files, not database
-
-### Phase 3 Features (Conditional)
-Only implement if Phase 2 evaluation requires them:
-- Multi-agent orchestration (FT12, FT13)
-- External API integration beyond Gemini CLI (FT11)
-- Custom MCP server with Frontmatter filtering (FT06)
-- Explicit domain management with weights (FT10)
-
-### Technology Stack
 - **Python**: 3.12 (managed via uv)
-- **Type Safety (Backend)**: Pydantic v2 (runtime validation + static type hints)
-- **Type Safety (Frontend)**: TypeScript (strict mode)
+- **Web Framework**: FastAPI
+- **RAG Framework**: LlamaIndex
+- **Graph DB**: Neo4j (PropertyGraphStore)
+- **LLM (local)**: llama.cpp (OpenAI互換API経由)
+- **LLM (cloud)**: Google GenAI / Anthropic / OpenRouter
+- **Embedding**: llama.cpp (OpenAI互換API経由、モデル: bge-m3)
+- **Type Safety**: Pydantic v2
 - **Dependency Management**: uv (pyproject.toml + uv.lock)
-- **MCP Servers**: MCP-Markdown-RAG (hybrid search)
-- **LLM Interface**: Gemini CLI (Phase 2), Gemini API (Phase 3)
-- **Vector DB**: Auto-managed by MCP-Markdown-RAG in `data/.rag_cache/`
-- **Orchestration** (Phase 3 only): LangGraph or LangChain
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `LLAMACPP_LLM_URL` | llama.cpp LLM サーバー URL | `http://localhost:11406` |
+| `LLAMACPP_EMBEDDING_URL` | llama.cpp Embedding サーバー URL | `http://localhost:11407` |
+| `GOOGLE_API_KEY` | Google GenAI API キー | - |
+| `DATABASE_URL_BOLT` | Neo4j Bolt URL | `bolt://localhost:7687` |
+| `NEO4J_USER` | Neo4j ユーザー名 | `neo4j` |
+| `NEO4J_PASSWORD` | Neo4j パスワード | `password` |
+
+## Implementation Status
+
+| Component | Status |
+|-----------|--------|
+| LLM layer (llama.cpp, Google GenAI, Anthropic, OpenRouter) | ✅ 実装済み・テスト済み |
+| LlamaIndex VectorStoreIndex 統合 | ✅ テスト済み (test_llamaindex_real.py) |
+| Neo4j 接続 | ✅ テスト済み (test_connect_db.py) |
+| FastAPI 基本構造 (main, ask, documents, feedback) | ✅ スケルトン実装済み |
+| `services/index/` | ❌ 未実装 |
+| `services/documents/` | ❌ 未実装 |
+| `services/ask/` (retrieval, service) | ❌ スケルトンのみ |
+| Neo4j PropertyGraphStore 統合 | ❌ 未実装 |
 
 ## Project Goals & Success Criteria
 
@@ -249,14 +166,3 @@ Only implement if Phase 2 evaluation requires them:
 | Reduce domain knowledge access time | 80% reduction | Time from question to relevant information |
 | Resolve ambiguous questions | 50% reduction in retries | Number of follow-up questions needed |
 | Multi-domain knowledge sharing | 3+ domains operational | System supports multiple knowledge bases |
-
-## Risk Mitigation
-
-**High Risk**: MCP-Markdown-RAG doesn't meet requirements
-- Mitigation: Early Phase 2 evaluation (week 1), buffer 2-3 weeks for Phase 3 custom implementation
-
-**Medium Risk**: Document quality is insufficient
-- Mitigation: Prepare 3-5 sample documents per domain before Phase 2, establish documentation guidelines
-
-**Low Risk**: Timeline conflicts (thesis, job hunting)
-- Mitigation: Focus on MVP in Phase 2, Phase 3 custom implementation only if absolutely necessary

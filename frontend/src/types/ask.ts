@@ -44,3 +44,17 @@ export interface ApiError {
   code?: string;
   details?: Record<string, any>;
 }
+
+export interface AnswerSource {
+  file: string;
+  snippet: string;
+  score: number;
+}
+
+export interface ConfirmResponse {
+  session_id: string;
+  question: string;
+  answer: string;
+  sources: AnswerSource[];
+  timestamp: string;
+}

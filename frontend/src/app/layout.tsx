@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
 
 export const metadata: Metadata = {
     title: 'Knowledge Retrieval Assistant',
@@ -13,20 +15,12 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="ja">
-			<body className="min-h-screen bg-gray-50 text-gray-900">
-				<header className="bg-white shadow-sm">
-					<nav className="max-w-7xl mx-auto px-4 py-4">
-            {/* ナビゲーション */}
-          </nav>
-				</header>
-				<main className="max-w-7xl mx-auto px-4 py-8">
+			<body className="flex min-h-screen flex-col bg-gray-50 text-gray-900">
+				<Header />
+				<main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">
           {children}
         </main>
-				<footer className="bg-gray-800 text-white mt-auto">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            {/* フッター */}
-          </div>
-        </footer>
+				<Footer />
 			</body>
 		</html>
 	);

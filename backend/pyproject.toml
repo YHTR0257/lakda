@@ -16,15 +16,20 @@ classifiers = [
 ]
 
 dependencies = [
-    "anthropic>=0.77.0",
     # Core dependencies (production)
     "click>=8.1.0",           # CLI framework
     "fastapi[standard]>=0.100.0",
-    "google-genai>=1.61.0",
     "httpx>=0.24.0",          # Async HTTP client for API calls
+    "llama-index>=0.14.13",
+    "llama-index-graph-stores-neo4j>=0.5.1",
+    "llama-index-llms-anthropic>=0.7.0",
+    "llama-index-llms-google-genai>=0.5.0",
+    "llama-index-embeddings-ollama>=0.5.0",
+    "llama-index-llms-ollama>=0.5.0",
+    "llama-index-llms-openrouter>=0.4.0",
     "markitdown>=0.1.4",      # Document conversion
-    "neo4j>=6.1.0",
-    "openai>=2.16.0",
+    "nest-asyncio>=1.6.0",    # Allow nested event loops
+    "openai>=1.0.0",
     "pydantic>=2.0.0",        # Data validation
     "pytest>=9.0.2",          # Testing framework
     "python-dotenv>=1.2.1",
@@ -69,6 +74,10 @@ python_functions = "test_*"
 addopts = [
     "--strict-markers",
     "-v",
+]
+filterwarnings = [
+    # llama-index-graph-stores-neo4j が内部で Pydantic v1 の .dict() を使用しているため抑制
+    "ignore::pydantic.warnings.PydanticDeprecatedSince20:llama_index.*",
 ]
 
 [tool.black]

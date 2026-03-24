@@ -1,9 +1,13 @@
-import type { Interpretation, Answer } from "@/types/ask";
+import type { Interpretation, Answer, ConfirmResponse } from "@/types/ask";
+import type { IndexResponse, LlmHealthResponse } from "@/types/index";
 import {
   mockSubmitQuestion,
   mockGetInterpretation,
   mockConfirmInterpretation,
   mockGetAnswer,
+  mockIndexMarkdown,
+  mockCheckIndexHealth,
+  mockConfirmAsk,
 } from "@/lib/mock-api";
 import { ApiError } from "next/dist/server/api-utils";
 
@@ -67,6 +71,82 @@ export async function getInterpretation(id: string): Promise<Interpretation> {
       errorData.error,
       errorData.code,
       errorData.details
+    );
+  }
+
+  return response.json();
+}
+
+export async function checkIndexHealth(): Promise<LlmHealthResponse> {
+  if (USE_MOCK) {
+    return await mockCheckIndexHealth();
+  }
+
+  const response = await fetch(`${BACKEND_URL}/index/health`);
+
+  if (!response.ok) {
+    return { llm: false, embedding: false, ok: false };
+  }
+
+  return response.json();
+}
+
+export async function confirmAsk(
+  question: string,
+  sessionId: string
+): Promise<ConfirmResponse> {
+  if (USE_MOCK) {
+    return await mockConfirmAsk(question, sessionId);
+  }
+
+  const response = await fetch(`${BACKEND_URL}/ask/confirm`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      session_id: sessionId,
+      confirmed_question: question,
+      options: { max_results: 5 },
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new ApiException(
+      response.status,
+      errorData?.detail ?? errorData?.error ?? "質問への回答に失敗しました。",
+      errorData?.code,
+      errorData?.details
+    );
+  }
+
+  return response.json();
+}
+
+export async function indexMarkdown(
+  markdown_text: string,
+  doc_id?: string
+): Promise<IndexResponse> {
+  if (USE_MOCK) {
+    return await mockIndexMarkdown(markdown_text, doc_id);
+  }
+
+  const response = await fetch(`${BACKEND_URL}/index/markdown`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ markdown_text, doc_id }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new ApiException(
+      response.status,
+      errorData?.detail ?? errorData?.error ?? "インデキシングに失敗しました。",
+      errorData?.code,
+      errorData?.details
     );
   }
 
