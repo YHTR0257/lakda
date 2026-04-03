@@ -32,13 +32,23 @@ class GoogleGenAILlmClient(LlamaIndexLlmClient):
             max_output_tokens: 生成される応答の最大トークン数
         """
         # 環境変数名: GOOGLE_API_KEY（LlamaIndexデフォルト）
-        llm = GoogleGenAI(
-            api_key=api_key or os.getenv("GOOGLE_API_KEY"),
-            model=model,
-            temperature=temperature,
-            max_output_tokens=max_output_tokens,
-        )
-        super().__init__(llm)
+        # GoogleGenAI() はコンストラクタ内で models.get() を呼びAPIに接続するため、
+        # 無効なキー・モデル名の場合にここで例外が発生する。try-except で吸収する。
+        # 空文字列キーは GoogleGenAI 内部で env var にフォールバックされるため事前に弾く。
+        resolved_key = api_key if api_key is not None else os.getenv("GOOGLE_API_KEY")
+        if not resolved_key:
+            self._llm = None
+            return
+        try:
+            llm = GoogleGenAI(
+                api_key=resolved_key,
+                model=model,
+                temperature=temperature,
+                max_output_tokens=max_output_tokens,
+            )
+            super().__init__(llm)
+        except Exception:
+            self._llm = None
 
     def health_check(self) -> bool:
         """Gemini APIの接続状態を確認する
@@ -46,6 +56,8 @@ class GoogleGenAILlmClient(LlamaIndexLlmClient):
         Returns:
             接続が正常な場合はTrue、そうでない場合はFalse
         """
+        if self._llm is None:
+            return False
         try:
             self._llm.complete("ping")
             return True

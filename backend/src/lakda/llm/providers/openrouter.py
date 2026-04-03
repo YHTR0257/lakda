@@ -3,7 +3,6 @@
 import os
 
 from llama_index.llms.openrouter import OpenRouter
-from openai import OpenAI
 
 from lakda.llm.base import LlamaIndexLlmClient
 
@@ -47,11 +46,7 @@ class OpenRouterLlmClient(LlamaIndexLlmClient):
             接続が正常な場合はTrue、そうでない場合はFalse
         """
         try:
-            client = OpenAI(
-                api_key=os.getenv("OPENROUTER_API_KEY"),
-                base_url="https://openrouter.ai/api/v1",
-            )
-            client.models.list()
+            self._llm.complete("ping")
             return True
         except Exception:
             return False
