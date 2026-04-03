@@ -1,5 +1,5 @@
 import type { Interpretation, Answer, ConfirmResponse } from "@/types/ask";
-import type { IndexResponse, LlmHealthResponse } from "@/types/index";
+import type { IndexResponse, LlmHealthResponse, ConvertResponse } from "@/types/index";
 import {
   mockSubmitQuestion,
   mockGetInterpretation,
@@ -8,6 +8,7 @@ import {
   mockIndexMarkdown,
   mockCheckIndexHealth,
   mockConfirmAsk,
+  mockUploadDocument,
 } from "@/lib/mock-api";
 import { ApiError } from "next/dist/server/api-utils";
 
@@ -121,6 +122,35 @@ export async function confirmAsk(
     );
   }
 
+  return response.json();
+}
+
+export async function uploadDocument(
+  file: File,
+  domain = "general",
+  auto_index = true,
+  clean = true
+): Promise<ConvertResponse> {
+  if (USE_MOCK) return await mockUploadDocument(file, domain, auto_index);
+
+  const body = new FormData();
+  body.append("file", file);
+  body.append("domain", domain);
+  body.append("auto_index", String(auto_index));
+  body.append("clean", String(clean));
+
+  const response = await fetch(`${BACKEND_URL}/documents/upload`, {
+    method: "POST",
+    body,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new ApiException(
+      response.status,
+      errorData?.detail ?? "ファイルアップロードに失敗しました。"
+    );
+  }
   return response.json();
 }
 

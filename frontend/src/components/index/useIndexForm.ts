@@ -50,11 +50,16 @@ export function useIndexForm() {
     if (!file) return;
 
     setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setFileContent(event.target?.result as string);
-    };
-    reader.readAsText(file);
+
+    if (file.name.endsWith(".md") || file.type === "text/markdown") {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFileContent(event.target?.result as string);
+      };
+      reader.readAsText(file);
+    } else {
+      setFileContent("");
+    }
   }
 
   return {

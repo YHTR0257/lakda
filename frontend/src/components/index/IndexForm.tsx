@@ -192,10 +192,17 @@ export default function IndexForm() {
                 {fileName ? (
                   <span className="font-medium text-blue-600">{fileName}</span>
                 ) : (
-                  <>クリックして <span className="font-medium text-blue-600">.md ファイル</span> を選択</>
-                )}
+                  <>クリックして <span className="font-medium text-blue-600">.md / .pdf / .json / 画像</span> を選択</>
+)}
               </span>
-              <input id="md_file" type="file" accept=".md,text/markdown" className="sr-only" onChange={handleFileChange} />
+              <input
+                id="md_file"
+                name="file"
+                type="file"
+                accept=".md,.pdf,.json,.jpg,.jpeg,.png,text/markdown"
+                className="sr-only"
+                onChange={handleFileChange}
+              />
             </label>
 
             <textarea name="markdown_text" required readOnly value={fileContent} className="sr-only" />
@@ -205,6 +212,9 @@ export default function IndexForm() {
                 <p className="mb-1 text-xs font-medium text-gray-500">プレビュー</p>
                 <pre className="max-h-48 overflow-y-auto whitespace-pre-wrap text-xs text-gray-700">{fileContent}</pre>
               </div>
+            )}
+            {fileName && !fileContent && (
+              <p className="text-xs text-gray-500 mt-2">プレビュー不可（バイナリファイル）</p>
             )}
           </div>
         )}
