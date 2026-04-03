@@ -172,16 +172,11 @@ class TestOpenRouterLlmClient:
         mock_structured_llm.complete.assert_called_once_with("Say hello")
 
     @patch("lakda.llm.providers.openrouter.OpenRouter")
-    @patch("lakda.llm.providers.openrouter.OpenAI")
-    def test_health_check_success(
-        self, mock_openai_class: MagicMock, mock_openrouter_class: MagicMock
-    ) -> None:
+    def test_health_check_success(self, mock_openrouter_class: MagicMock) -> None:
         """OpenRouterのヘルスチェック成功"""
         mock_llm = MagicMock()
         mock_openrouter_class.return_value = mock_llm
-        mock_openai_client = MagicMock()
-        mock_openai_class.return_value = mock_openai_client
-        mock_openai_client.models.list.return_value = MagicMock()
+        mock_llm.complete.return_value = MagicMock()
 
         client = OpenRouterLlmClient(api_key="test-api-key")
 
