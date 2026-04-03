@@ -27,7 +27,8 @@ dependencies = [
     "llama-index-embeddings-ollama>=0.5.0",
     "llama-index-llms-ollama>=0.5.0",
     "llama-index-llms-openrouter>=0.4.0",
-    "markitdown>=0.1.4",      # Document conversion
+    "markitdown[all]>=0.1.4", # Document conversion
+    "python-magic>=0.4.27",   # MIME type detection
     "nest-asyncio>=1.6.0",    # Allow nested event loops
     "openai>=1.0.0",
     "pydantic>=2.0.0",        # Data validation
@@ -96,6 +97,8 @@ extend-exclude = '''
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -106,12 +109,17 @@ select = [
     "UP",  # pyupgrade
 ]
 ignore = [
-    "E501",  # line too long (handled by black)
+    "E501",  # line too long (handled by ruff format)
     "B008",  # do not perform function calls in argument defaults
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]  # Ignore unused imports in __init__.py
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
 
 [tool.mypy]
 python_version = "3.12"

@@ -63,7 +63,7 @@ class IndexPipeline:
     def run(
         self,
         markdown_text: str,
-        doc_id: str | None = None,
+        metadata: dict | None = None,
         chunk_size: int = 256,
         chunk_overlap: int = 32,
         show_progress: bool = False,
@@ -74,16 +74,17 @@ class IndexPipeline:
 
         Args:
             markdown_text: インデキシング対象の Markdown テキスト
-            doc_id: ドキュメント識別子（None の場合は自動生成）
+            metadata: Document に付与するメタデータ（doc_id, domain, tags 等）
+            chunk_size: チャンクサイズ（トークン数）
+            chunk_overlap: チャンクオーバーラップ（トークン数）
             show_progress: 進捗表示フラグ
 
         Returns:
             Neo4j に保存された PropertyGraphIndex
         """
         t0 = time.perf_counter()
-        metadata = {"doc_id": doc_id} if doc_id else {}
-        document = Document(text=markdown_text, metadata=metadata)
-        logger.info("[pipeline] Document created chars=%d", len(markdown_text))
+        document = Document(text=markdown_text, metadata=metadata or {})
+        logger.info("[pipeline] Document created chars=%d metadata_keys=%s", len(markdown_text), list((metadata or {}).keys()))
 
         # 3段階チャンキング:
         # 1. MarkdownNodeParser: 見出し構造（#, ##, ###）でセクション分割
