@@ -95,4 +95,19 @@ describe("useChatAsk", () => {
 
     expect(result.current.messages).toHaveLength(0);
   });
+
+  it("confirmQuestion が例外をスローしたときエラーメッセージを追加すること", async () => {
+    confirmQuestion.mockRejectedValue(new Error("ネットワークエラー"));
+
+    const { result } = renderHook(() => useChatAsk());
+
+    await act(async () => {
+      result.current.submit("テスト質問です");
+    });
+
+    const messages = result.current.messages;
+    const errorMessage = messages.find((m) => m.error);
+    expect(errorMessage).toBeDefined();
+    expect(errorMessage?.error).toBe("ネットワークエラー");
+  });
 });

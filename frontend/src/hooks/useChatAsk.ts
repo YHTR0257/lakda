@@ -29,26 +29,38 @@ export function useChatAsk() {
     formData.set("question", question);
 
     startTransition(async () => {
-      const result = (await confirmQuestion(
-        undefined,
-        formData
-      )) as AskActionState;
+      try {
+        const result = (await confirmQuestion(
+          undefined,
+          formData
+        )) as AskActionState;
 
-      if (result.success && result.answer) {
-        addMessage({
-          id: crypto.randomUUID(),
-          role: "assistant",
-          text: result.answer.answer,
-          answerHtml: result.answerHtml,
-          sources: result.answer.sources,
-          timestamp: new Date().toISOString(),
-        });
-      } else {
+        if (result.success && result.answer) {
+          addMessage({
+            id: crypto.randomUUID(),
+            role: "assistant",
+            text: result.answer.answer,
+            answerHtml: result.answerHtml,
+            sources: result.answer.sources,
+            timestamp: new Date().toISOString(),
+          });
+        } else {
+          addMessage({
+            id: crypto.randomUUID(),
+            role: "assistant",
+            text: "",
+            error: result.error || "エラーが発生しました。",
+            timestamp: new Date().toISOString(),
+          });
+        }
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "予期しないエラーが発生しました。";
         addMessage({
           id: crypto.randomUUID(),
           role: "assistant",
           text: "",
-          error: result.error || "エラーが発生しました。",
+          error: message,
           timestamp: new Date().toISOString(),
         });
       }
