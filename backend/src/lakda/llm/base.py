@@ -6,7 +6,7 @@ from typing import Type, TypeVar
 from llama_index.core.llms import LLM
 from pydantic import BaseModel
 
-from lakda.llm.exceptions import LlmResponseParseError
+from lakda.llm.exceptions import LlmAuthenticationError, LlmResponseParseError
 from lakda.llm.utils import map_llm_exceptions
 
 T = TypeVar("T", bound=BaseModel)
@@ -66,6 +66,8 @@ class LlamaIndexLlmClient(ABC):
             LlmTimeoutError: タイムアウトした場合
             LlmResponseParseError: レスポンスのパースに失敗した場合
         """
+        if self._llm is None:
+            raise LlmAuthenticationError("クライアントの初期化に失敗しました（APIキーまたはモデル名が無効）")
         structured_llm = self._llm.as_structured_llm(response_model)
         response = structured_llm.complete(prompt)
         if response.raw is None:

@@ -294,16 +294,11 @@ class TestOpenRouterLlmClientError:
             client.generate_response(prompt="Hello", response_model=SampleResponse)
 
     @patch("lakda.llm.providers.openrouter.OpenRouter")
-    @patch("lakda.llm.providers.openrouter.OpenAI")
-    def test_health_check_failure(
-        self, mock_openai_class: MagicMock, mock_openrouter_class: MagicMock
-    ) -> None:
+    def test_health_check_failure(self, mock_openrouter_class: MagicMock) -> None:
         """case17: ヘルスチェック失敗"""
         mock_llm = MagicMock()
         mock_openrouter_class.return_value = mock_llm
-        mock_openai_client = MagicMock()
-        mock_openai_class.return_value = mock_openai_client
-        mock_openai_client.models.list.side_effect = Exception("Connection failed")
+        mock_llm.complete.side_effect = Exception("Connection failed")
 
         client = OpenRouterLlmClient(api_key="test-key")
 

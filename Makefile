@@ -102,8 +102,10 @@ test-llm-api: _check-env
 	elif [ -n "$(SUITE)" ]; then \
 	  if [ "$(SUITE)" = "connect" ]; then \
 	    target="tests/llm/test_connect_2_model.py"; \
+	  elif [ "$(SUITE)" = "errors" ]; then \
+	    target="tests/llm/test_error_boundary_real.py"; \
 	  else \
-	    echo "Error: SUITE は connect を指定してください"; exit 1; \
+	    echo "Error: SUITE は connect または errors を指定してください"; exit 1; \
 	  fi; \
 	else \
 	  target="tests/llm/"; \
