@@ -14,3 +14,10 @@ export interface LlmHealthResponse {
   embedding: boolean;
   ok: boolean;
 }
+
+export interface ConvertResponse {
+  doc_id: string;
+  markdown: string;
+  format: string;
+  indexed: boolean;
+}

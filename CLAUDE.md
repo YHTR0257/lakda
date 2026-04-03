@@ -1,6 +1,46 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+<important>
+
+## Development Process (実行フロー)
+
+全てのプロセス間ではユーザーと認識のすり合わせを行います。ユーザーの承認なしに次のプロセスに進まないこと。
+各プロセスの前に、 `/translate` と `/explore` を必ず実行し、ユーザーの指示を正確に理解し、関連ファイルと影響範囲を把握すること。
+
+1. **Design**: アーキテクチャ設計、モジュール分割、インターフェース定義
+2. **Explore**: コードベースを探索し、関連ファイルと影響範囲を把握 Skill: `/explore`
+3. **Define scope**: 変更のスコープを明確にし、必要なタスクを洗い出す 
+4. **Planning**: 仕様策定、タスク分割、スケジュール作成
+5. **Implementation**: コーディング、ユニットテスト、統合テスト
+6. **Linter, Formatter**: コードスタイルの統一、品質向上
+7. **Code Review**: コードの品質、可読性、設計への準拠を確認
+
+## 必須スキル（hookで強制。違反時はユーザーが検知する）
+
+ユーザーのプロンプトを受け取ったら、コード修正やファイル読み込みの**前に**、
+以下の2つのスキルをこの順で実行せよ:
+
+1. `/translate` — ユーザーの指示を「論点抽出 → 構造化された問題文 → リポジトリの具体箇所」に翻訳
+2. `/explore` — 翻訳結果をもとに関連ファイルと影響範囲を探索・報告
+
+この2つを**スキップしてはならない**。
+hookの `<user-prompt-submit-hook>` メッセージでも同じ指示が届く。
+
+```
+ユーザーの指示
+  → /translate（論点抽出・構造化・具体箇所の特定）
+  → ユーザーの確認
+  → /explore（関連ファイルの探索・影響範囲の報告）
+  → ユーザーの承認
+  → 各ステップのタスク実行へ
+```
+
+### git 操作の禁止
+
+git コマンド（commit, push, checkout, branch, merge, rebase 等）は実行しない。
+git の状態確認（status, log, diff, rev-parse）は許可する。
+
+</important>
 
 ## Project Overview
 
@@ -123,6 +163,8 @@ data/
 
 Neo4j はインデックスデータの永続化ストアとして使用（`data/` には保存しない）。
 
+<important>
+
 ## Technology Stack
 
 - **Python**: 3.12 (managed via uv)
@@ -134,6 +176,8 @@ Neo4j はインデックスデータの永続化ストアとして使用（`data
 - **Embedding**: llama.cpp (OpenAI互換API経由、モデル: bge-m3)
 - **Type Safety**: Pydantic v2
 - **Dependency Management**: uv (pyproject.toml + uv.lock)
+
+</important>
 
 ## Environment Variables
 

@@ -172,6 +172,20 @@ export async function mockCheckIndexHealth(): Promise<LlmHealthResponse> {
   return { llm: true, embedding: true, ok: true };
 }
 
+export async function mockUploadDocument(
+  file: File,
+  _domain: string,
+  auto_index: boolean
+): Promise<import("@/types/index").ConvertResponse> {
+  await delay(1200);
+  return {
+    doc_id: crypto.randomUUID(),
+    markdown: `# ${file.name}\n\n（変換済みコンテンツ）`,
+    format: file.type || "application/octet-stream",
+    indexed: auto_index,
+  };
+}
+
 export async function mockIndexMarkdown(
   markdown_text: string,
   doc_id?: string

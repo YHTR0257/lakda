@@ -60,6 +60,24 @@ test:
 	cd $(BACKEND_DIR) && uv run pytest tests/ -v
 
 # =============================================================================
+# Docker コンテナ内テスト（Claude Code フックから呼び出し）
+#
+# 使い方:
+#   make test-backend    # backend コンテナ内でユニットテスト（LLM/DB不要）
+#   make test-frontend   # frontend コンテナ内で Jest テスト
+#
+# 前提: make up でコンテナが起動していること
+# =============================================================================
+
+.PHONY: test-backend
+test-backend: _check-env
+	$(COMPOSE) exec $(BACKEND_SVC) uv run pytest tests/ -m "not llm_api and not db" -v
+
+.PHONY: test-frontend
+test-frontend: _check-env
+	$(COMPOSE) exec $(FRONTEND_SVC) npm test -- --watchAll=false
+
+# =============================================================================
 # 実API統合テスト（Docker コンテナ内で実行）
 #
 # 使い方:
