@@ -1,77 +1,38 @@
 "use client";
 
-import { useAskForm } from "@/components/ask/useAskForm";
-import SubmitButton from "@/components/ask/SubmitButton";
-import AnswerDisplay from "@/components/ask/AnswerDisplay";
+import { useChatAsk } from "@/hooks/useChatAsk";
+import ChatHistory from "@/components/ask/ChatHistory";
+import ChatInput from "@/components/ask/ChatInput";
 
 export default function AskPage() {
-  const { state, formAction, formRef } = useAskForm();
+  const { messages, isPending, inputRef, submit, clearMessages } = useChatAsk();
 
   return (
-    <div className="container mx-auto max-w-3xl p-6">
-      <div className="mb-8">
-        <h1 className="mb-2 text-3xl font-bold text-gray-900">LAKDA 🐫</h1>
-        <p className="text-gray-600">
-          アップロードされたドキュメントに基づいて質問に回答します。
-          質問を入力すると、LAKDAはデータベースから関連情報を検索し、コンテキストに基づいた回答を生成します。
-        </p>
-      </div>
-
-      <form ref={formRef} action={formAction} className="space-y-6">
+    <div className="-mx-4 -my-8 flex h-[calc(100vh-8rem)] flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-gray-200 px-6 py-3">
         <div>
-          <label
-            htmlFor="question"
-            className="mb-2 block text-sm font-medium text-gray-700"
-          >
-            質問内容
-          </label>
-          <textarea
-            id="question"
-            name="question"
-            rows={8}
-            required
-            minLength={10}
-            className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-            placeholder="研究に関する質問を入力してください。
-例: 弾性メタマテリアルの逆設計手法について、特にトポロジー最適化とGNNを組み合わせたアプローチを知りたいです。"
-          />
-          <p className="mt-2 text-sm text-gray-500">
-            最低10文字以上で入力してください
+          <h1 className="text-xl font-bold text-gray-900">LAKDA 🐫</h1>
+          <p className="text-xs text-gray-500">
+            ドキュメントに基づいて質問に回答します
           </p>
         </div>
-
-        {/* エラー表示 */}
-        {state.error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-            <div className="flex items-start">
-              <svg
-                className="mt-0.5 mr-3 h-5 w-5 text-red-600"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-red-800">{state.error}</p>
-                {state.code && (
-                  <p className="mt-1 text-xs text-red-600">
-                    エラーコード: {state.code}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+        {messages.length > 0 && (
+          <button
+            type="button"
+            onClick={clearMessages}
+            className="rounded-lg px-3 py-1.5 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+          >
+            会話をクリア
+          </button>
         )}
+      </div>
 
-        <SubmitButton />
-      </form>
+      {/* Chat history */}
+      <ChatHistory messages={messages} isPending={isPending} />
 
-      {/* 回答表示 */}
-      {state.answer && <AnswerDisplay answer={state.answer} answerHtml={state.answerHtml} />}
+      {/* Input area */}
+      <ChatInput inputRef={inputRef} onSubmit={submit} isPending={isPending} />
     </div>
   );
 }
