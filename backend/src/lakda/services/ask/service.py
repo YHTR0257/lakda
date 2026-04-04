@@ -1,6 +1,9 @@
 """Ask サービス - 質問応答のオーケストレーション"""
 
+import asyncio
 import datetime
+import json
+from collections.abc import AsyncGenerator
 
 from llama_index.core import Settings
 
@@ -86,3 +89,58 @@ class AskService:
             sources=sources,
             timestamp=timestamp,
         )
+
+    async def astream_answer(
+        self,
+        session_id: str,
+        question: str,
+        max_results: int = 3,
+    ) -> AsyncGenerator[str, None]:
+        """質問に対してストリーミングで回答を生成する SSE ジェネレーター
+
+        トークンを `data: <token>\\n\\n` 形式で yield し、
+        終端に `event: sources\\ndata: <json>\\n\\n` を yield する。
+
+        Args:
+            session_id: セッション識別子
+            question: 質問テキスト
+            max_results: 参照するソースノードの最大数
+
+        Yields:
+            SSE 形式の文字列チャンク
+        """
+        Settings.llm = self._llm_manager.get_llm()
+        Settings.embed_model = self._llm_manager.get_embed_model()
+
+        index = self._store.get_index()
+        retrieval = AskRetrieval(index)
+        token_gen, source_nodes = retrieval.astream(question, max_results=max_results)
+
+        sources = []
+        for node_with_score in source_nodes:
+            node = node_with_score.node
+            metadata = node.metadata
+            sources.append(
+                SourceItem(
+                    file=metadata.get("doc_id", "unknown"),
+                    snippet=node.get_content()[:300],
+                    score=node_with_score.score or 0.0,
+                ).model_dump()
+            )
+
+        _sentinel = object()
+
+        async def _iter_tokens():
+            loop = asyncio.get_event_loop()
+            gen = token_gen
+            while True:
+                token = await loop.run_in_executor(None, next, gen, _sentinel)
+                if token is _sentinel:
+                    break
+                yield token
+
+        async for token in _iter_tokens():
+            if token:
+                yield f"data: {json.dumps(token, ensure_ascii=False)}\n\n"
+
+        yield f"event: sources\ndata: {json.dumps(sources, ensure_ascii=False)}\n\n"

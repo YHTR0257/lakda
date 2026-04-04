@@ -30,6 +30,12 @@ class SourceItem(BaseModel):
     score: float = Field(..., description="Relevance score")
     line: Optional[int] = Field(None, description="Line number in source document")
 
+class ChatRequest(BaseModel):
+    session_id: str = Field(..., description="Session identifier for tracking")
+    question: str = Field(..., description="The question text")
+    options: AskOptions
+
+
 class AnswerResponse(BaseModel):
     session_id: str = Field(..., description="Session identifier for tracking")
     question: str = Field(..., description="The question text to be answered")
