@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { confirmQuestion } from "@/app/ask/actions";
+import { confirmQuestion } from "@/app/(chat)/ask/actions";
 import type { ConfirmResponse } from "@/types/ask";
 import { useEffect, useRef } from "react";
 

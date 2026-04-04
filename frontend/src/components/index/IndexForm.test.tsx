@@ -14,7 +14,7 @@ jest.mock("react-dom", () => ({
   useFormStatus: () => ({ pending: false }),
 }));
 
-jest.mock("@/app/index/actions", () => ({
+jest.mock("@/app/(main)/index/actions", () => ({
   indexDocument: jest.fn(),
 }));
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { indexDocument } from "@/app/index/actions";
+import { indexDocument } from "@/app/(main)/index/actions";
 import { checkIndexHealth } from "@/lib/api";
 import { useEffect, useRef, useState } from "react";
 import type { LlmHealthResponse } from "@/types/index";

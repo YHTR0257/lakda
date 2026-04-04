@@ -27,9 +27,9 @@ const assistantMessage: Message = {
 };
 
 describe("ChatWindow", () => {
-  it("メッセージが空のとき案内テキストを表示すること", () => {
-    render(<ChatWindow messages={[]} isLoading={false} />);
-    expect(screen.getByText("質問を入力してください")).toBeInTheDocument();
+  it("メッセージが空のときメッセージリストが空であること", () => {
+    const { container } = render(<ChatWindow messages={[]} isLoading={false} />);
+    expect(container.querySelectorAll(".space-y-4 > *")).toHaveLength(1); // bottomRef のみ
   });
 
   it("ユーザーメッセージとアシスタントメッセージを表示すること", () => {

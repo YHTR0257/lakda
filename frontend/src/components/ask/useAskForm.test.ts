@@ -2,7 +2,7 @@ import { renderHook, act } from "@testing-library/react";
 import { useAskForm } from "./useAskForm";
 
 // confirmQuestion action をモック
-jest.mock("@/app/ask/actions", () => ({
+jest.mock("@/app/(chat)/ask/actions", () => ({
   confirmQuestion: jest.fn(),
 }));
 
