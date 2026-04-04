@@ -1,7 +1,5 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import Header from '@/components/layout/Header'
-import Footer from '@/components/layout/Footer'
 
 export const metadata: Metadata = {
     title: 'Knowledge Retrieval Assistant',
@@ -15,12 +13,8 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="ja">
-			<body className="flex min-h-screen flex-col bg-gray-50 text-gray-900">
-				<Header />
-				<main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">
-          {children}
-        </main>
-				<Footer />
+			<body className="bg-gray-50 text-gray-900">
+				{children}
 			</body>
 		</html>
 	);

@@ -9,14 +9,7 @@ export default function AskPage() {
     useChat({ api: "/api/ask/chat" });
 
   return (
-    <div className="flex h-dvh flex-col">
-      <header className="border-b border-gray-200 bg-white px-6 py-4">
-        <h1 className="text-xl font-bold text-gray-900">LAKDA 🐫</h1>
-        <p className="text-sm text-gray-500">
-          アップロードされたドキュメントに基づいて質問に回答します
-        </p>
-      </header>
-
+    <div className="flex flex-1 flex-col overflow-hidden">
       <ChatWindow messages={messages} isLoading={isLoading} />
 
       {error && (
@@ -32,6 +25,7 @@ export default function AskPage() {
         handleInputChange={handleInputChange}
         handleSubmit={handleSubmit}
         isLoading={isLoading}
+        compact={messages.length === 0}
       />
     </div>
   );
