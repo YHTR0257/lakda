@@ -58,3 +58,7 @@ export interface ConfirmResponse {
   sources: AnswerSource[];
   timestamp: string;
 }
+
+export interface ChatMessageData {
+  sources: AnswerSource[];
+}

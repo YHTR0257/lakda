@@ -1,5 +1,5 @@
 import { ApiException } from "@/lib/api";
-import type { Interpretation, Answer, ConfirmResponse } from "@/types/ask";
+import type { Interpretation, Answer, ConfirmResponse, AnswerSource } from "@/types/ask";
 import type { IndexResponse, LlmHealthResponse } from "@/types/index";
 
 const mockInterpretations: Record<string, Interpretation> = {};
@@ -196,5 +196,46 @@ export async function mockIndexMarkdown(
     doc_id: doc_id ?? null,
     status: "success",
     timestamp: new Date().toISOString(),
+  };
+}
+
+export async function* mockChatStream(
+  _question: string
+): AsyncGenerator<{ type: "token"; token: string } | { type: "sources"; sources: AnswerSource[] }> {
+  const tokens = [
+    "これは",
+    "モック",
+    "の",
+    "ストリーミング",
+    "回答",
+    "です。\n\n",
+    "## 検索結果\n\n",
+    "データベースから",
+    "関連情報が",
+    "見つかりました。\n\n",
+    "詳細は",
+    "ソースを",
+    "ご確認ください。",
+  ];
+
+  for (const token of tokens) {
+    await delay(80 + Math.random() * 70);
+    yield { type: "token", token };
+  }
+
+  yield {
+    type: "sources",
+    sources: [
+      {
+        file: "doc-001",
+        snippet: "関連するドキュメントの抜粋テキストです。詳細な情報が含まれています。",
+        score: 0.95,
+      },
+      {
+        file: "doc-002",
+        snippet: "別のドキュメントからの関連情報の抜粋です。",
+        score: 0.82,
+      },
+    ],
   };
 }

@@ -41,7 +41,7 @@ describe("IndexForm", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "ファイルアップロード" }));
 
-    expect(screen.getByText(/\.md ファイル/)).toBeInTheDocument();
+    expect(screen.getByText(/\.md \/ \.pdf/)).toBeInTheDocument();
   });
 
   it("初期状態ではバナーが表示されない", () => {
